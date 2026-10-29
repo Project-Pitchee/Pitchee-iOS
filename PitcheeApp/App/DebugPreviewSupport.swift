@@ -15,6 +15,40 @@ import SwiftUI
 /// realistic recording without touching the app's persistence layer.
 enum DebugPreviewData {
     static let result = makeResult()
+    static let previousFinalScore = 74.0
+    static let previousMetrics = PreviousScoreMetrics(
+        finalScore: previousFinalScore,
+        standardScore: 62,
+        naturalnessScore: 72,
+        meanPitchHz: 165
+    )
+    static func makePlaybackAudioURL() -> URL? {
+        let sampleRate = 16_000
+        let duration = 12
+        let samples = (0..<(sampleRate * duration)).map { index in
+            let time = Double(index) / Double(sampleRate)
+            let envelope = 0.22 + 0.16 * sin(time * 3.2).magnitude
+            let voice = sin(2 * .pi * 174 * time) + 0.28 * sin(2 * .pi * 348 * time)
+            return Float(voice * envelope)
+        }
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("pitchee-playback-preview-\(UUID().uuidString).wav")
+        do {
+            try MonitorWaveEncoder.encode(samples).write(to: url, options: .atomic)
+            return url
+        } catch {
+            return nil
+        }
+    }
+    static let bottleneckResult = makeResult(
+        meanPitchHz: 150,
+        standardScore: 42,
+        naturalnessScore: 72,
+        finalScore: 42,
+        rule: "low_f0_natural_cap",
+        cap: 59,
+        limited: true
+    )
     static let recordedAt = Date(timeIntervalSince1970: 1_790_395_200)
     static let history = [
         makeResult(meanPitchHz: 156, standardScore: 55, naturalnessScore: 66, finalScore: 64),
@@ -26,16 +60,20 @@ enum DebugPreviewData {
         meanPitchHz: Double = 174,
         standardScore: Double = 68,
         naturalnessScore: Double = 78,
-        finalScore: Double = 82
+        finalScore: Double = 82,
+        rule: String = "continuous",
+        cap: Double? = nil,
+        limited: Bool = false,
+        boosted: Bool = false
     ) -> PitcheeAnalysisResult {
-        let pitchWindows: [PitcheeAnalysisResult.PitchWindow] = (0..<24).map { index in
-            let start = Double(index) * 0.5
-            let pitch: Double? = index == 5 || index == 17
+        let pitchWindows: [PitcheeAnalysisResult.PitchWindow] = (0..<240).map { index in
+            let start = Double(index) * 0.05
+            let pitch: Double? = index.isMultiple(of: 57)
                 ? nil
-                : meanPitchHz + sin(Double(index) * 0.65) * 18
+                : meanPitchHz + sin(Double(index) * 0.065) * 18
             return .init(
                 startSeconds: start,
-                endSeconds: start + 0.5,
+                endSeconds: start + 0.05,
                 f0Hz: pitch
             )
         }
@@ -82,7 +120,7 @@ enum DebugPreviewData {
                 segments: segments
             ),
             f0: .init(
-                windowSeconds: 0.5,
+                windowSeconds: 0.05,
                 meanHz: meanPitchHz,
                 standardDeviationHz: 14,
                 voicedFrameCount: 1_920,
@@ -104,10 +142,10 @@ enum DebugPreviewData {
             composite: .init(
                 baseScore: finalScore,
                 finalScore: finalScore,
-                cap: nil,
-                rule: "continuous",
-                limited: false,
-                boosted: false
+                cap: cap,
+                rule: rule,
+                limited: limited,
+                boosted: boosted
             )
         )
     }

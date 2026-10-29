@@ -14,18 +14,24 @@ nonisolated final class MonitorPitchWindow: Sendable {
     let range: ClosedRange<TimeInterval>
     let samples: [LivePitchSample]
     let pitchRange: ClosedRange<Double>?
+    let averagePitchHz: Double?
 
     init(range: ClosedRange<TimeInterval>, samples: [LivePitchSample]) {
         self.range = range
         self.samples = samples
         var low: Double?
         var high: Double?
+        var sum = 0.0
+        var count = 0
         for sample in samples {
             guard let pitch = sample.pitchHz, pitch.isFinite, pitch > 0 else { continue }
             low = min(low ?? pitch, pitch)
             high = max(high ?? pitch, pitch)
+            sum += pitch
+            count += 1
         }
         pitchRange = low.flatMap { low in high.map { low...$0 } }
+        averagePitchHz = count > 0 ? sum / Double(count) : nil
     }
 }
 
@@ -62,12 +68,12 @@ final class MonitorPresentation {
     }
 
     func publish(cursorTime: TimeInterval, windowDuration: TimeInterval,
-                 playbackRange: ClosedRange<TimeInterval>?, includesPitch: Bool) {
+                 selectedRange: ClosedRange<TimeInterval>?, includesPitch: Bool) {
         let retained = timeline.availableRange
         if availableRange != retained { availableRange = retained }
         let range: ClosedRange<TimeInterval>
-        if let playbackRange {
-            range = playbackRange
+        if let selectedRange {
+            range = selectedRange
         } else if retained.upperBound <= retained.lowerBound {
             range = 0...windowDuration
         } else {
@@ -105,7 +111,7 @@ final class MonitorPresentation {
         timeline = MonitorTimeline()
         spectrogramColumns = []
         revision &+= 1
-        publish(cursorTime: 0, windowDuration: windowDuration, playbackRange: nil, includesPitch: includesPitch)
+        publish(cursorTime: 0, windowDuration: windowDuration, selectedRange: nil, includesPitch: includesPitch)
     }
 
     private func appendSpectrogramColumns(_ columns: [MonitorSpectrogramColumn]) {

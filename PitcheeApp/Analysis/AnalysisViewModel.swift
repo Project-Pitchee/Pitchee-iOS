@@ -14,6 +14,13 @@ import SwiftData
 import UIKit
 #endif
 
+nonisolated struct PreviousScoreMetrics: Sendable {
+    let finalScore: Double
+    let standardScore: Double
+    let naturalnessScore: Double
+    let meanPitchHz: Double?
+}
+
 @MainActor
 final class AnalysisViewModel: NSObject, ObservableObject {
     private static let logger = Logger(subsystem: "com.lvyzhan.Pitchee", category: "Analysis")
@@ -32,6 +39,10 @@ final class AnalysisViewModel: NSObject, ObservableObject {
     @Published private(set) var livePitchSamples: [LivePitchSample] = []
     @Published private(set) var result: PitcheeAnalysisResult?
     @Published private(set) var volumeStatistics: RecordingVolumeStatistics?
+    @Published private(set) var playbackAudioURL: URL?
+    @Published private(set) var previousFinalScore: Double?
+    @Published private(set) var previousMetrics: PreviousScoreMetrics?
+    @Published private(set) var hasPlayedScoreAnimation = false
     @Published private(set) var studyFeedbackDirection: ScoreStudyDirection?
     // Recording alerts and analysis feedback belong to separate screens.
     @Published private(set) var recordingError: String?
@@ -45,6 +56,10 @@ final class AnalysisViewModel: NSObject, ObservableObject {
         result = nil
         assessment = nil
         volumeStatistics = nil
+        previousFinalScore = nil
+        previousMetrics = nil
+        hasPlayedScoreAnimation = false
+        discardPlaybackAudio()
         elapsedTime = 0
         livePitchSamples = []
         captureNotice = nil
@@ -55,6 +70,9 @@ final class AnalysisViewModel: NSObject, ObservableObject {
     /// End this take at the interruption. Accepted PCM is drained into a valid
     /// WAV, and analysis resumes in the foreground without reopening the mic.
     func interruptCapture() {
+        #if DEBUG
+        if usesPreviewData { return }
+        #endif
         if let context = recordingModelContext, audioCapture != nil, recordingURL != nil,
            state == .recording || state == .requestingPermission {
             captureGeneration = UUID()
@@ -66,6 +84,9 @@ final class AnalysisViewModel: NSObject, ObservableObject {
     }
 
     func handleSceneInactive(isBackground: Bool) {
+        #if DEBUG
+        if usesPreviewData { return }
+        #endif
         sceneIsActive = false
         // A microphone permission prompt temporarily makes the scene inactive.
         // Going to the background still cancels that pending request.
@@ -106,6 +127,8 @@ final class AnalysisViewModel: NSObject, ObservableObject {
     private var recordingStartedAt: Date?
     private var timerTask: Task<Void, Never>?
     private var analyzer: PitcheeCoreAnalyzer?
+    private var analyzerSettings: AnalyzerSettings?
+    private var playbackTemporaryURL: URL?
     private var analyzerPreparationTask: Task<Void, Never>?
     private var analysisTask: Task<Void, Never>?
     private var permissionTask: Task<Void, Never>?
@@ -163,7 +186,10 @@ final class AnalysisViewModel: NSObject, ObservableObject {
     /// utility priority so entering the page stays responsive, and a later
     /// tap only needs to reset the realtime stream and open the microphone.
     func prepareForRecording() {
-        guard state == .idle, analyzer == nil, analyzerPreparationTask == nil else { return }
+        let settings = AnalyzerSettings.current
+        guard state == .idle,
+              analyzer == nil || analyzerSettings != settings,
+              analyzerPreparationTask == nil else { return }
         analyzerPreparationTask = Task { [weak self] in
             guard let self else { return }
             guard let analyzer = try? await self.preparedAnalyzer() else { return }
@@ -361,7 +387,7 @@ final class AnalysisViewModel: NSObject, ObservableObject {
               let audioCapture, let url = recordingURL else { return }
         stopTimer()
         let recordedAt = recordingStartedAt ?? Date()
-        elapsedTime = Date().timeIntervalSince(recordedAt)
+        elapsedTime = min(RecordingClock.maximumSeconds, Date().timeIntervalSince(recordedAt))
         let generation = captureGeneration
         let owner = audioSessionOwner
         let studyAuthorization = recordingStudyAuthorization
@@ -466,11 +492,19 @@ final class AnalysisViewModel: NSObject, ObservableObject {
             while !Task.isCancelled {
                 // Elapsed-time text has its own low-frequency subscription;
                 // the pitch chart advances independently with detector frames.
-                do { try await Task.sleep(for: .milliseconds(200)) } catch { return }
+                do { try await Task.sleep(for: .milliseconds(100)) } catch { return }
                 guard let self,
                       self.state == .recording,
                       let recordingStartedAt = self.recordingStartedAt else { return }
-                elapsedTime = Date().timeIntervalSince(recordingStartedAt)
+                let elapsed = Date().timeIntervalSince(recordingStartedAt)
+                if elapsed >= RecordingClock.maximumSeconds {
+                    self.elapsedTime = RecordingClock.maximumSeconds
+                    if let modelContext = self.recordingModelContext {
+                        self.stopRecording(modelContext: modelContext)
+                    }
+                    return
+                }
+                self.elapsedTime = elapsed
             }
         }
     }
@@ -587,11 +621,16 @@ final class AnalysisViewModel: NSObject, ObservableObject {
                     scoreProfile: analysisProfile
                 )
                 try Task.checkCancellation()
+                inputSeconds = analysisResult.audio.inputSeconds
+                speechSeconds = analysisResult.vad.speechSeconds
+                // Results are only meaningful with at least five seconds of
+                // VAD-confirmed speech. Do not persist or present the result.
+                guard RecordingQuality.hasMinimumSpeech(analysisResult.vad.speechSeconds) else {
+                    throw InsufficientSpeechError()
+                }
                 if let studyAttempt {
                     studyPair = ScoreStudyEvaluator.pair(for: analysisResult, direction: studyAttempt.direction)
                 }
-                inputSeconds = analysisResult.audio.inputSeconds
-                speechSeconds = analysisResult.vad.speechSeconds
                 let volumeStatistics: RecordingVolumeStatistics?
                 do {
                     volumeStatistics = try await Task.detached(priority: .userInitiated) {
@@ -616,6 +655,29 @@ final class AnalysisViewModel: NSObject, ObservableObject {
                         backgroundDBFS: RecordingStatisticsMath.percentile(0.5, in: background)
                     )
                 }
+                let preference = VoicePreference(
+                    legacyStoredValue: UserDefaults.standard.string(
+                        forKey: AppStorageKey.voicePreference
+                    ) ?? ""
+                ) ?? .undecided
+                let previousAssessment = try? modelContext.fetch(
+                    FetchDescriptor<RecordingAssessment>()
+                ).max(by: { $0.recordedAt < $1.recordedAt })
+                if let previousAssessment {
+                    let previousScore = previousAssessment.finalScore(for: preference)
+                    previousFinalScore = previousScore
+                    previousMetrics = PreviousScoreMetrics(
+                        finalScore: previousScore,
+                        standardScore: preference == .masculine
+                            ? 100 - previousAssessment.standardScore
+                            : previousAssessment.standardScore,
+                        naturalnessScore: previousAssessment.naturalnessScore,
+                        meanPitchHz: previousAssessment.meanPitchHz
+                    )
+                } else {
+                    previousFinalScore = nil
+                    previousMetrics = nil
+                }
                 result = analysisResult
                 self.volumeStatistics = volumeStatistics
                 let recordingQuality = RecordingQuality(
@@ -633,14 +695,35 @@ final class AnalysisViewModel: NSObject, ObservableObject {
                         result: analysisResult,
                         quality: recordingQuality
                     )
+                    let assessmentID = assessment.id
+                    let storedAudioFileName = try? await Task.detached(priority: .utility) {
+                        try RecordingAudioStore.store(url, id: assessmentID)
+                    }.value
+                    assessment.audioFileName = storedAudioFileName
                     self.assessment = assessment
                     modelContext.insert(assessment)
                     do {
                         try modelContext.save()
                     } catch {
                         modelContext.delete(assessment)
+                        if let storedAudioFileName {
+                            RecordingAudioStore.delete(fileName: storedAudioFileName)
+                        }
                         throw error
                     }
+
+                    let persistentURL = storedAudioFileName.flatMap {
+                        RecordingAudioStore.url(for: $0)
+                    }
+                    let temporaryURL = persistentURL == nil
+                        ? try? await Task.detached(priority: .utility) {
+                            try Self.makePlaybackCopy(from: url)
+                        }.value
+                        : nil
+                    if let playbackURL = persistentURL ?? temporaryURL {
+                        replacePlaybackAudio(with: playbackURL, temporary: persistentURL == nil)
+                    }
+                    hasPlayedScoreAnimation = false
                 } catch {
                     diagnosticOutcome = .historySaveFailed
                     analysisError = String(localized: "analysis.error.resultSaveFailed")
@@ -651,6 +734,10 @@ final class AnalysisViewModel: NSObject, ObservableObject {
                 Self.logger.error("Analysis failed: \(String(describing: error), privacy: .private)")
                 result = nil
                 volumeStatistics = nil
+                previousFinalScore = nil
+                previousMetrics = nil
+                hasPlayedScoreAnimation = false
+                discardPlaybackAudio()
                 state = .idle
                 if !(error is CancellationError) { analysisError = analysisErrorMessage(for: error) }
             }
@@ -659,6 +746,7 @@ final class AnalysisViewModel: NSObject, ObservableObject {
 
     private static func diagnosticOutcome(for error: Error) -> DiagnosticOutcome {
         if error is CancellationError { return .cancelled }
+        if error is InsufficientSpeechError { return .noSpeech }
         guard let error = error as? PitcheeCoreError else { return .analysisFailed }
         switch error.statusCode {
         case 5: return .noSpeech
@@ -668,12 +756,38 @@ final class AnalysisViewModel: NSObject, ObservableObject {
         }
     }
 
+    private nonisolated static func makePlaybackCopy(from source: URL) throws -> URL {
+        let destination = FileManager.default.temporaryDirectory
+            .appendingPathComponent("pitchee-playback-\(UUID().uuidString).wav")
+        try FileManager.default.copyItem(at: source, to: destination)
+        return destination
+    }
+
+    private func replacePlaybackAudio(with url: URL, temporary: Bool) {
+        discardPlaybackAudio()
+        playbackAudioURL = url
+        if temporary { playbackTemporaryURL = url }
+    }
+
+    func markScoreAnimationPlayed() {
+        hasPlayedScoreAnimation = true
+    }
+
+    private func discardPlaybackAudio() {
+        playbackAudioURL = nil
+        guard let playbackTemporaryURL else { return }
+        self.playbackTemporaryURL = nil
+        try? FileManager.default.removeItem(at: playbackTemporaryURL)
+    }
+
     private func preparedAnalyzer() async throws -> PitcheeCoreAnalyzer {
-        if let analyzer { return analyzer }
+        let settings = AnalyzerSettings.current
+        if let analyzer, analyzerSettings == settings { return analyzer }
         let analyzer = try await Task.detached(priority: .utility) {
-            try PitcheeCoreAnalyzer()
+            try PitcheeCoreAnalyzer(settings: settings)
         }.value
         self.analyzer = analyzer
+        analyzerSettings = settings
         return analyzer
     }
 
@@ -695,6 +809,9 @@ final class AnalysisViewModel: NSObject, ObservableObject {
     }
 
     private func analysisErrorMessage(for error: Error) -> String {
+        if error is InsufficientSpeechError {
+            return String(localized: "practice.quality.shortSpeech")
+        }
         guard let coreError = error as? PitcheeCoreError else {
             return String(localized: "analysis.error.resultUnreadable")
         }
@@ -720,11 +837,14 @@ final class AnalysisViewModel: NSObject, ObservableObject {
         feedbackTimeoutTask?.cancel()
         recordingStopTask?.cancel()
         discardCapture(audioCapture, url: recordingURL)
+        discardPlaybackAudio()
         if audioCapture == nil, recordingStopTask == nil { deactivateAudioSession() }
         if let pendingRecording { try? FileManager.default.removeItem(at: pendingRecording.url) }
         if let pendingStudy { try? FileManager.default.removeItem(at: pendingStudy.url) }
     }
 }
+
+private struct InsufficientSpeechError: Error {}
 
 #if os(iOS)
 @MainActor
@@ -759,6 +879,9 @@ extension AnalysisViewModel {
     }
 
     private func applyPreviewState(_ state: State) {
+        let previewResult = ProcessInfo.processInfo.arguments.contains("-result-bottleneck-preview")
+            ? DebugPreviewData.bottleneckResult
+            : DebugPreviewData.result
         self.state = state
         recordingError = nil
         analysisError = nil
@@ -770,11 +893,19 @@ extension AnalysisViewModel {
             elapsedTime = DebugPreviewData.liveSamples.last?.elapsedTime ?? 0
             livePitchSamples = DebugPreviewData.liveSamples
         case .awaitingFeedback, .analyzing, .completed:
-            elapsedTime = DebugPreviewData.result.audio.inputSeconds
+            elapsedTime = previewResult.audio.inputSeconds
             livePitchSamples = DebugPreviewData.liveSamples
         }
-        result = state == .completed ? DebugPreviewData.result : nil
+        result = state == .completed ? previewResult : nil
         volumeStatistics = state == .completed ? DebugPreviewData.volumeStatistics : nil
+        discardPlaybackAudio()
+        if state == .completed, let previewAudioURL = DebugPreviewData.makePlaybackAudioURL() {
+            playbackAudioURL = previewAudioURL
+            playbackTemporaryURL = previewAudioURL
+        }
+        previousFinalScore = state == .completed ? DebugPreviewData.previousFinalScore : nil
+        previousMetrics = state == .completed ? DebugPreviewData.previousMetrics : nil
+        hasPlayedScoreAnimation = false
         studyFeedbackDirection = state == .awaitingFeedback ? .feminine : nil
     }
 }

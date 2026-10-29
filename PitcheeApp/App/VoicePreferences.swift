@@ -63,13 +63,6 @@ extension VoicePreference {
         }
     }
 
-    var chartTargetLabel: LocalizedStringKey {
-        switch self {
-        case .masculine: "scoring.masculine.chartTarget"
-        case .feminine: "scoring.feminine.chartTarget"
-        case .undecided: "scoring.undecided.chartTarget"
-        }
-    }
 }
 
 struct VoicePreferenceCard: View {

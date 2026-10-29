@@ -21,15 +21,19 @@ xcrun swiftc -parse-as-library -swift-version 5 -default-isolation MainActor \
     -I "$project_directory/Dependencies/PitcheeCore/platform/ios" \
     "$project_directory/PitcheeApp/Interop/Core/AnalysisResult.swift" \
     "$project_directory/PitcheeApp/Interop/Core/CoreError.swift" \
+    "$project_directory/PitcheeApp/Interop/Core/AnalyzerSettings.swift" \
     -I "$core_scoring_module_directory" "$core_scoring_object" -lc++ \
     "$project_directory/PitcheeApp/Analysis/VoiceScoring.swift" \
     "$project_directory/PitcheeApp/Analysis/PitchTimeline.swift" \
     "$project_directory/PitcheeApp/Analysis/RecordingStatistics.swift" \
     "$project_directory/PitcheeApp/Analysis/RecordingAssessment.swift" \
+    "$project_directory/PitcheeApp/Analysis/RecordingAudioStore.swift" \
     "$project_directory/PitcheeApp/Analysis/ScoreStudyEvaluator.swift" \
+    "$project_directory/PitcheeApp/Analysis/RecordingClock.swift" \
     "$project_directory/PitcheeApp/Analysis/AnalysisViewModel.swift" \
     "$project_directory/PitcheeApp/Practice/PracticeData.swift" \
     "$project_directory/PitcheeApp/App/AppStorage.swift" \
+    "$project_directory/PitcheeApp/App/PrivateAppStorage.swift" \
     "$project_directory/PitcheeApp/Audio/AudioSessionCoordinator.swift" \
     "$project_directory/PitcheeApp/Diagnostics/LocalDiagnostics.swift" \
     "$project_directory/PitcheeApp/Diagnostics/LocalScoreStudy.swift" \

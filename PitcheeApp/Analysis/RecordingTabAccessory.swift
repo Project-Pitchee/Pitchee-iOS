@@ -40,12 +40,14 @@ struct RecordingAccessoryContent: View {
     let action: () -> Void
     var iconSize: CGFloat = 26
     @State private var state: AnalysisViewModel.State
+    @State private var elapsed: TimeInterval = 0
 
     init(viewModel: AnalysisViewModel, action: @escaping () -> Void, iconSize: CGFloat = 26) {
         self.viewModel = viewModel
         self.action = action
         self.iconSize = iconSize
         _state = State(initialValue: viewModel.state)
+        _elapsed = State(initialValue: viewModel.elapsedTime)
     }
 
     private var isRecording: Bool { state == .recording }
@@ -58,7 +60,11 @@ struct RecordingAccessoryContent: View {
                 Text(title)
                     .font(.system(.subheadline, design: .rounded).weight(.semibold))
                     .fixedSize(horizontal: false, vertical: true)
-                if !dynamicTypeSize.isAccessibilitySize {
+                if isRecording {
+                    Text(verbatim: RecordingClock.string(elapsed))
+                        .font(.system(.caption, design: .rounded).monospacedDigit())
+                        .foregroundStyle(.secondary)
+                } else if let subtitle, !dynamicTypeSize.isAccessibilitySize {
                     Text(subtitle)
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -88,6 +94,7 @@ struct RecordingAccessoryContent: View {
         .frame(maxWidth: .infinity)
         .sensoryFeedback(.impact(weight: .light), trigger: isRecording)
         .onReceive(viewModel.$state.removeDuplicates()) { state = $0 }
+        .onReceive(viewModel.$elapsedTime.removeDuplicates()) { elapsed = $0 }
     }
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -111,11 +118,10 @@ struct RecordingAccessoryContent: View {
         return String(localized: "recording.controls.startRecording")
     }
 
-    private var subtitle: LocalizedStringKey {
-        if isRecording { return "recording.controls.stopAndAnalyze.subtitle" }
+    private var subtitle: LocalizedStringKey? {
         if isRequestingPermission { return "recording.controls.preparingMicrophone.subtitle" }
         if needsAnalysisScreen { return "recording.controls.viewAnalysisProgress.subtitle" }
-        return "recording.controls.startRecording.subtitle"
+        return nil
     }
 }
 

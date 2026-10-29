@@ -73,6 +73,12 @@ nonisolated enum PracticeFeedback: String, Codable, CaseIterable, Identifiable {
 /// Conservative recording checks, independent of VFP/naturalness/model scores.
 /// These thresholds are provisional capture heuristics, not clinical judgements.
 nonisolated struct RecordingQuality: Codable, Equatable, Sendable {
+    static let minimumSpeechSeconds = 5.0
+
+    static func hasMinimumSpeech(_ seconds: Double) -> Bool {
+        seconds.isFinite && seconds >= minimumSpeechSeconds
+    }
+
     enum Issue: String, Codable, CaseIterable {
         case shortSpeech, lowLevel, background, clipping, unavailable
         var advice: String {
@@ -94,7 +100,9 @@ nonisolated struct RecordingQuality: Codable, Equatable, Sendable {
     init(speechSeconds: Double, speechDBFS: Double?, backgroundDBFS: Double?, clippedFraction: Double?) {
         version = Self.rulesVersion
         var issues: [Issue] = []
-        if !speechSeconds.isFinite || speechSeconds < 5 { issues.append(.shortSpeech) }
+        if !Self.hasMinimumSpeech(speechSeconds) {
+            issues.append(.shortSpeech)
+        }
         if let speechDBFS, speechDBFS.isFinite, (-120...0).contains(speechDBFS) {
             if speechDBFS < -45 { issues.append(.lowLevel) }
         } else { issues.append(.unavailable) }

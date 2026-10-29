@@ -48808,7 +48808,7 @@
       }
     },
     "monitor.pitch.windowRange" : {
-      "comment" : "Voice practice interface. Keep actions concise; preserve metric names and format arguments.",
+      "comment" : "Live audio monitoring. Overall pitch range shown in the selected time window.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
@@ -48844,7 +48844,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Window range"
+            "value" : "Range"
           }
         },
         "es" : {
@@ -48976,13 +48976,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "窗口内范围"
+            "value" : "范围"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "視窗內範圍"
+            "value" : "範圍"
           }
         }
       }

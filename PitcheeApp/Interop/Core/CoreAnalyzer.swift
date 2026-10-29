@@ -25,18 +25,18 @@ public actor PitcheeCoreAnalyzer {
     private let resources: NativeAnalyzerResources
     private let decoder: JSONDecoder
 
-    public init(modelDirectory: URL? = nil, threads: Int32 = 2) throws {
+    init(modelDirectory: URL? = nil, settings: AnalyzerSettings = .current) throws {
         let resolvedModelDirectory = try modelDirectory ?? PitcheeCore.bundledModelDirectory()
         var errorBuffer = [CChar](repeating: 0, count: 1_024)
         var createdHandle: OpaquePointer?
 
         let status = pitchee_analyzer_create(
             resolvedModelDirectory.path,
-            threads,
+            Int32(settings.threads),
             1,
-            0,
-            0,
-            0,
+            Float(settings.minF0Hz),
+            Float(settings.maxF0Hz),
+            Float(settings.minConfidence),
             &createdHandle,
             &errorBuffer,
             errorBuffer.count

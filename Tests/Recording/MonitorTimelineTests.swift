@@ -89,23 +89,23 @@ enum MonitorTimelineTests {
               && reads.value == 2, "Live-edge lookups stay constant-time")
 
         let emptyScoring = ScoringPitchSnapshot(samples: [])
-        check(emptyScoring.samples.isEmpty && emptyScoring.timeRange == 0...10
+        check(emptyScoring.samples.isEmpty && emptyScoring.timeRange == 0...3
               && emptyScoring.cursorTime == 0 && emptyScoring.currentPitch == nil,
-              "The empty scoring chart reserves a stable ten-second axis")
-        for seconds in [0.0, 0.02, 0.2, 0.4, 1, 9.99, 10] {
+              "The empty scoring chart reserves a stable three-second axis")
+        for seconds in [0.0, 0.02, 0.2, 0.4, 1, 2.99, 3] {
             let scoring = ScoringPitchSnapshot(samples: [
                 .init(elapsedTime: 0, pitchHz: 180), .init(elapsedTime: seconds, pitchHz: 220)
             ])
-            check(scoring.timeRange == 0...10 && scoring.cursorTime == seconds,
+            check(scoring.timeRange == 0...3 && scoring.cursorTime == seconds,
                   "Early scoring updates advance the cursor without rescaling the existing trace")
         }
         let lateScoring = ScoringPitchSnapshot(samples: [
             .init(elapsedTime: 6.99, pitchHz: 170), .init(elapsedTime: 7, pitchHz: 180),
             .init(elapsedTime: 12, pitchHz: 200), .init(elapsedTime: 17, pitchHz: 220)
         ])
-        check(lateScoring.timeRange == 7...17 && lateScoring.cursorTime == 17
-              && lateScoring.samples.map(\.elapsedTime) == [7, 12, 17],
-              "Scoring rolls a fixed ten-second window and preserves its exact boundaries")
+        check(lateScoring.timeRange == 14...17 && lateScoring.cursorTime == 17
+              && lateScoring.samples.map(\.elapsedTime) == [17],
+              "Scoring rolls a fixed three-second window and preserves its exact boundaries")
 
         let longPitchHistory = (0..<100_000).map {
             LivePitchSample(elapsedTime: Double($0) / 100, pitchHz: 200 + Double($0 % 100))
@@ -123,18 +123,18 @@ enum MonitorTimelineTests {
         var densePitch = (0...10_000).map {
             LivePitchSample(elapsedTime: Double($0) / 1_000, pitchHz: 200 + Double($0 % 11))
         }
-        densePitch[4_567] = .init(elapsedTime: 4.567, pitchHz: 950)
-        densePitch[4_569] = .init(elapsedTime: 4.569, pitchHz: 55)
+        densePitch[8_567] = .init(elapsedTime: 8.567, pitchHz: 950)
+        densePitch[8_569] = .init(elapsedTime: 8.569, pitchHz: 55)
         let denseScoring = ScoringPitchSnapshot(samples: densePitch)
         check(denseScoring.samples.count <= 640 && denseScoring.samples.count < densePitch.count,
               "Dense detector output has a fixed display-sized point budget")
-        check(denseScoring.samples.first?.elapsedTime == densePitch.first?.elapsedTime
-              && denseScoring.samples.first?.pitchHz == densePitch.first?.pitchHz
+        check(denseScoring.samples.first?.elapsedTime == 7
+              && denseScoring.samples.first?.pitchHz == densePitch[7_000].pitchHz
               && denseScoring.samples.last?.elapsedTime == densePitch.last?.elapsedTime
               && denseScoring.samples.last?.pitchHz == densePitch.last?.pitchHz,
-              "Scoring reduction preserves the first and final detector samples")
-        check(denseScoring.samples.contains { $0.elapsedTime == 4.567 && $0.pitchHz == 950 }
-              && denseScoring.samples.contains { $0.elapsedTime == 4.569 && $0.pitchHz == 55 },
+              "Scoring reduction preserves the visible window endpoints")
+        check(denseScoring.samples.contains { $0.elapsedTime == 8.567 && $0.pitchHz == 950 }
+              && denseScoring.samples.contains { $0.elapsedTime == 8.569 && $0.pitchHz == 55 },
               "A narrow peak and valley survive even when evenly spaced sampling would skip them")
         check(zip(denseScoring.samples, denseScoring.samples.dropFirst()).allSatisfy {
             $0.elapsedTime < $1.elapsedTime
@@ -161,13 +161,13 @@ enum MonitorTimelineTests {
         let missingPitches: [Double?] = [nil, .nan, .infinity, -.infinity, 0, -100, 49, 1_001]
         for missingPitch in missingPitches {
             var interruptedPitch = densePitch
-            interruptedPitch[4_568] = .init(elapsedTime: 4.568, pitchHz: missingPitch)
+            interruptedPitch[8_568] = .init(elapsedTime: 8.568, pitchHz: missingPitch)
             let interruptedScoring = ScoringPitchSnapshot(samples: interruptedPitch)
-            check(interruptedScoring.samples.contains { $0.elapsedTime == 4.568 && !isDrawablePitch($0) }
+            check(interruptedScoring.samples.contains { $0.elapsedTime == 8.568 && !isDrawablePitch($0) }
                   && !bridgesMissingPitch(interruptedScoring.samples, source: interruptedPitch),
                   "Silence, invalid estimates, and off-chart pitches cannot become a fabricated voiced line")
-            check(interruptedScoring.samples.contains { $0.elapsedTime == 4.567 && $0.pitchHz == 950 }
-                  && interruptedScoring.samples.contains { $0.elapsedTime == 4.569 && $0.pitchHz == 55 },
+            check(interruptedScoring.samples.contains { $0.elapsedTime == 8.567 && $0.pitchHz == 950 }
+                  && interruptedScoring.samples.contains { $0.elapsedTime == 8.569 && $0.pitchHz == 55 },
                   "Gap preservation retains the real extrema on both sides of a brief interruption")
         }
         let alternatingPitch = (0...100_000).map {
@@ -203,10 +203,9 @@ enum MonitorTimelineTests {
         readoutPitch[9_999] = .init(elapsedTime: 9.999, pitchHz: 333)
         readoutPitch[10_000] = .init(elapsedTime: 10, pitchHz: nil)
         let readoutScoring = ScoringPitchSnapshot(samples: readoutPitch)
-        check(!readoutScoring.samples.contains { $0.pitchHz == 333 }
-              && readoutScoring.currentPitch == 333
+        check(readoutScoring.currentPitch == 333
               && ScoringPitchSnapshot.currentPitch(in: readoutPitch) == 333,
-              "The frequency readout uses original samples even when reduction omits its latest valid frame")
+              "The frequency readout always uses the original latest valid frame")
 
         var short = MonitorTimeline()
         check(short.duration == 0 && short.availableRange == 0...0, "An empty history starts at zero")
@@ -362,6 +361,39 @@ enum MonitorTimelineTests {
               "An infinite window is empty")
         check(MonitorTimeline.window(endingAt: 0, duration: 5, availableRange: 0...Double.infinity) == 0...0,
               "Invalid available ranges yield an empty window")
+        check(MonitorTimeline.playbackPage(
+            containing: 1, duration: 10, replayRange: 0...25, availableRange: 0...25
+        ) == 0...5, "A remainder playback starts with the short leading page")
+        check(MonitorTimeline.playbackPage(
+            containing: 14, duration: 10, replayRange: 0...25, availableRange: 0...25
+        ) == 5...15, "An interior playback page keeps a fixed ten-second window")
+        check(MonitorTimeline.playbackPage(
+            containing: 19, duration: 10, replayRange: 0...25, availableRange: 0...25
+        ) == 15...25, "A cursor near the tail selects the final aligned playback page")
+        check(MonitorTimeline.playbackPage(
+            containing: 20, duration: 10, replayRange: 0...25, availableRange: 0...25
+        ) == 15...25, "The final playback page is aligned to the replay tail")
+        check(MonitorTimeline.playbackPage(
+            containing: 6.9, duration: 10, replayRange: 6.9...12, availableRange: 0...12
+        ) == 2...12, "A short replay uses the full window ending at the tail")
+        check(MonitorTimeline.playbackPage(
+            containing: 1, duration: 10, replayRange: 0...3, availableRange: 0...3
+        ) == 0...10, "A replay shorter than the window still has a fixed length")
+        check(MonitorTimeline.browsePage(
+            containing: 19, duration: 5, availableRange: 0...23
+        ) == 18...23, "A cursor near the tail selects the final aligned page")
+        check(MonitorTimeline.browsePage(
+            containing: 1, duration: 5, availableRange: 0...23
+        ) == 0...3, "A remainder recording has a short leading page")
+        check(MonitorTimeline.browsePage(
+            containing: 4, duration: 5, availableRange: 0...23
+        ) == 3...8, "A cursor in the next fixed page keeps that page stable")
+        check(MonitorTimeline.browsePage(
+            containing: 22.9, duration: 5, availableRange: 0...23
+        ) == 18...23, "Dragging inside the final page does not move its time range")
+        check(MonitorTimeline.browsePage(
+            containing: 1, duration: 5, availableRange: 0...3
+        ) == 0...3, "A short recording exposes all audio instead of empty future time")
         var cursor = 33.0
         cursor = MonitorTimeline.rewind(time: cursor, availableRange: 20...80)
         check(cursor == 28, "Rewind subtracts exactly five seconds")

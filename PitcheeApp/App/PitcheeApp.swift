@@ -20,6 +20,8 @@ struct PitcheeApp: App {
             try PrivateAppStorage.prepare(libraryDirectory: library)
             try PrivateAppStorage.removeAbandonedRecordings(in: FileManager.default.temporaryDirectory)
             AppStorageMigration.run()
+            PitcheeAndroidFont.registerBundledFonts()
+            AnalyzerSettings.migrateThreadDefaultIfNeeded()
             // Keep SwiftData's existing default URL so no history migration is needed.
             let configuration = ModelConfiguration(schema: Schema([RecordingAssessment.self]), cloudKitDatabase: .none)
             container = try ModelContainer(for: RecordingAssessment.self, configurations: configuration)

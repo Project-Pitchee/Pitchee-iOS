@@ -634,7 +634,7 @@ nonisolated enum VoiceLibraryMatcher {
             )
             issues.formUnion(measured.issues)
         }
-        if !result.vad.speechSeconds.isFinite || result.vad.speechSeconds < 5 {
+        if !RecordingQuality.hasMinimumSpeech(result.vad.speechSeconds) {
             issues.insert(.shortSpeech)
         }
         if effectiveQuality.version != RecordingQuality.rulesVersion {

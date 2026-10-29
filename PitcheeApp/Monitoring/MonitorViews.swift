@@ -32,39 +32,25 @@ private struct MonitorPage: View {
     let model: MonitorViewModel
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.monitorAccessoryState) private var accessoryState
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var showsHelp = false
 
     var body: some View {
-        GeometryReader { geometry in
-            let wide = geometry.size.width >= 700 && !dynamicTypeSize.isAccessibilitySize
-            ScrollView {
-                if wide {
-                    HStack(alignment: .top, spacing: 40) {
-                        MonitorReadout(model: model)
-                            .frame(width: 240, alignment: .leading)
-                        MonitorInstrument(model: model, height: max(180, min(340, geometry.size.height - 180)))
-                    }
-                    .padding(.vertical, 28)
-                } else {
-                    VStack(alignment: .leading, spacing: 28) {
-                        MonitorReadout(model: model)
-                        MonitorInstrument(model: model, height: dynamicTypeSize.isAccessibilitySize
-                                          ? 240 : max(220, min(360, geometry.size.height * 0.42)))
-                    }
-                    .padding(.top, 24)
-                    .padding(.bottom, 20)
-                }
-            }
-            .scrollBounceBehavior(.basedOnSize)
-            .scrollIndicators(.hidden)
-            .padding(.horizontal, wide ? 32 : 24)
-            .frame(maxWidth: 980)
-            .frame(maxWidth: .infinity)
+        VStack(alignment: .leading, spacing: 0) {
+            MonitorReadout(model: model)
+                .padding(.horizontal, 16)
+                .padding(.top, 4)
+                .padding(.bottom, 8)
+            MonitorInstrument(model: model)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            MonitorTimelineControl(model: model)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 8)
         }
         .background(Color(uiColor: .systemBackground).ignoresSafeArea())
         .navigationTitle(LocalizedStringKey(model.kind.titleKey))
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.hidden, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 MonitorWindowMenu(model: model)
@@ -102,72 +88,159 @@ private struct MonitorPage: View {
 private struct MonitorReadout: View {
     let model: MonitorViewModel
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @ScaledMetric(relativeTo: .largeTitle) private var valueSize = 58.0
+    @State private var lastPrimaryFrequency = 0.0
+    @State private var lastRangeLow = 0.0
+    @State private var lastRangeHigh = 0.0
+    @State private var lastSpectrumLevel = 0.0
 
-    private var frequency: Double? {
-        model.currentFrequencyHz
+    private static let valueAnimation = Animation.easeOut(duration: 0.06)
+
+    private var secondaryTitle: LocalizedStringKey {
+        model.kind == .pitch ? "monitor.pitch.windowRange" : "monitor.spectrum.peakLevel"
     }
 
-    private var secondaryValue: String {
-        if model.kind == .spectrum {
-            return model.currentSpectrumPeak.map { Double($0.amplitudeDBFS).formatted(.number.precision(.fractionLength(1))) } ?? "—"
+    private var secondaryUnit: LocalizedStringKey {
+        model.kind == .pitch ? "monitor.unit.hertz" : "monitor.unit.dbfs"
+    }
+
+    private var primaryReading: some View {
+        reading(
+            title: model.kind == .spectrum ? "monitor.spectrum.peak" : "monitor.pitch.current",
+            unit: "monitor.unit.hertz"
+        ) {
+            DampedNumericText(
+                value: model.currentFrequencyHz ?? lastPrimaryFrequency,
+                hasValue: model.currentFrequencyHz != nil,
+                fractionDigits: 1,
+                size: 34
+            )
+            .animation(Self.valueAnimation, value: model.currentFrequencyHz ?? lastPrimaryFrequency)
         }
-        guard let range = model.visiblePitchRange else { return "—" }
-        let low = range.lowerBound
-        let high = range.upperBound
-        return "\(low.formatted(.number.precision(.fractionLength(0))))–\(high.formatted(.number.precision(.fractionLength(0))))"
+    }
+
+    private var secondaryReading: some View {
+        reading(
+            title: secondaryTitle,
+            unit: secondaryUnit
+        ) {
+            if model.kind == .spectrum {
+                DampedNumericText(
+                    value: Double(model.currentSpectrumPeak?.amplitudeDBFS ?? Float(lastSpectrumLevel)),
+                    hasValue: model.currentSpectrumPeak != nil,
+                    fractionDigits: 1,
+                    size: 22
+                )
+                .animation(
+                    Self.valueAnimation,
+                    value: Double(model.currentSpectrumPeak?.amplitudeDBFS ?? Float(lastSpectrumLevel))
+                )
+            } else if let range = model.visiblePitchRange {
+                HStack(spacing: 0) {
+                    DampedNumericText(
+                        value: range.lowerBound,
+                        hasValue: true,
+                        fractionDigits: 0,
+                        size: 22
+                    )
+                    Text(verbatim: "–")
+                        .font(.system(size: 22, weight: .regular, design: .rounded).monospacedDigit())
+                    DampedNumericText(
+                        value: range.upperBound,
+                        hasValue: true,
+                        fractionDigits: 0,
+                        size: 22
+                    )
+                }
+                .animation(Self.valueAnimation, value: range)
+            } else {
+                DampedNumericText(
+                    value: lastRangeHigh,
+                    hasValue: false,
+                    fractionDigits: 0,
+                    size: 22
+                )
+            }
+        }
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            let layout = dynamicTypeSize.isAccessibilitySize
-                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 20))
-                : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: 20))
-            layout {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(LocalizedStringKey(model.kind == .spectrum ? "monitor.spectrum.peak" : "monitor.pitch.current"))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text(verbatim: frequency.map { $0.formatted(.number.precision(.fractionLength(1))) } ?? "—")
-                            .font(.system(size: valueSize, weight: .regular, design: .rounded).monospacedDigit())
-                            .minimumScaleFactor(0.5)
-                            .lineLimit(1)
-                        Text("monitor.unit.hertz")
-                            .font(.body)
-                            .foregroundStyle(.secondary)
-                    }
-                    .accessibilityElement(children: .combine)
-                    .accessibilityIdentifier("monitor.frequency")
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+            : AnyLayout(HStackLayout(alignment: .top, spacing: 28))
+        layout {
+            primaryReading
+            .frame(width: dynamicTypeSize.isAccessibilitySize ? nil : 154, alignment: .leading)
+            .accessibilityIdentifier("monitor.frequency")
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(LocalizedStringKey(model.kind == .pitch ? "monitor.pitch.windowRange" : "monitor.spectrum.peakLevel"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(verbatim: secondaryValue)
-                            .font(.system(.title3, design: .rounded).monospacedDigit())
-                            .minimumScaleFactor(0.75)
-                            .lineLimit(1)
-                        Text(LocalizedStringKey(model.kind == .pitch ? "monitor.unit.hertz" : "monitor.unit.dbfs"))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .accessibilityElement(children: .combine)
-            }
-            MonitorFrequencyGauge(frequency: frequency, kind: model.kind)
-                .frame(height: 64)
+            secondaryReading
+            .frame(width: dynamicTypeSize.isAccessibilitySize ? nil : 124, alignment: .leading)
+
+            Spacer(minLength: 0)
         }
+        .onChange(of: model.currentFrequencyHz, initial: true) { _, value in
+            if let value { lastPrimaryFrequency = value }
+        }
+        .onChange(of: model.visiblePitchRange, initial: true) { _, range in
+            guard let range else { return }
+            lastRangeLow = range.lowerBound
+            lastRangeHigh = range.upperBound
+        }
+        .onChange(of: model.currentSpectrumPeak?.amplitudeDBFS, initial: true) { _, level in
+            if let level { lastSpectrumLevel = Double(level) }
+        }
+    }
+
+    private func reading<Value: View>(
+        title: LocalizedStringKey,
+        unit: LocalizedStringKey,
+        @ViewBuilder value: () -> Value
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                value()
+                Text(unit)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+private struct DampedNumericText: View, Animatable {
+    var value: Double
+    let hasValue: Bool
+    let fractionDigits: Int
+    let size: CGFloat
+
+    var animatableData: Double {
+        get { value }
+        set { value = newValue }
+    }
+
+    var body: some View {
+        Text(verbatim: hasValue
+            ? value.formatted(.number.precision(.fractionLength(fractionDigits)))
+            : "—")
+            .font(.system(size: size, weight: .regular, design: .rounded).monospacedDigit())
+            .contentTransition(.identity)
+            .minimumScaleFactor(0.7)
+            .lineLimit(1)
     }
 }
 
 private struct MonitorInstrument: View {
     let model: MonitorViewModel
-    let height: CGFloat
+    @AppStorage(AnalyzerSettingsKey.minF0Hz) private var minF0Hz = AnalyzerSettings.defaultMinF0Hz
+    @AppStorage(AnalyzerSettingsKey.maxF0Hz) private var maxF0Hz = AnalyzerSettings.defaultMaxF0Hz
+
+    private var pitchFrequencyRange: ClosedRange<Double> {
+        AnalyzerSettings.realtimeChartRange(minF0Hz: minF0Hz, maxF0Hz: maxF0Hz)
+    }
 
     private var emptyKey: String? {
         if model.isBusy { return "monitor.status.preparing" }
@@ -179,47 +252,39 @@ private struct MonitorInstrument: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            ZStack {
-                Group {
-                    switch model.kind {
-                    case .spectrum:
-                        MonitorSpectrumPlot(frame: model.currentSpectrum)
-                    case .pitch:
-                        MonitorPitchPlot(samples: model.visiblePitchSamples,
-                                         timeRange: model.visibleRange,
-                                         cursorTime: model.cursorTime)
-                    }
-                }
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(LocalizedStringKey(
-                    model.kind == .spectrum ? "monitor.spectrum.chart.a11y" : "monitor.pitch.chart.a11y"
-                ))
-                .accessibilityValue(Text("monitor.chart.range.a11y \(monitorSeconds(model.visibleRange.lowerBound)) \(monitorSeconds(model.visibleRange.upperBound)) \(monitorSeconds(model.cursorTime))"))
-
-                if let emptyKey {
-                    Text(LocalizedStringKey(emptyKey))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Color(uiColor: .systemBackground))
-                        .padding(.leading, 28)
-                        .padding(.horizontal, 28)
-                        .allowsHitTesting(false)
+        ZStack {
+            Group {
+                switch model.kind {
+                case .spectrum:
+                    MonitorSpectrumPlot(frame: model.currentSpectrum)
+                case .pitch:
+                    MonitorPitchPlot(samples: model.visiblePitchSamples,
+                                     timeRange: model.visibleRange,
+                                     cursorTime: model.cursorTime,
+                                     frequencyRange: pitchFrequencyRange,
+                                     averagePitch: model.visibleAveragePitchHz)
                 }
             }
-            .frame(height: height)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(LocalizedStringKey(
+                model.kind == .spectrum ? "monitor.spectrum.chart.a11y" : "monitor.pitch.chart.a11y"
+            ))
+            .accessibilityValue(Text("monitor.chart.range.a11y \(monitorSeconds(model.visibleRange.lowerBound)) \(monitorSeconds(model.visibleRange.upperBound)) \(monitorSeconds(model.cursorTime))"))
 
-            if model.hasAudio {
-                MonitorTimelineControl(model: model)
+            if let emptyKey {
+                Text(LocalizedStringKey(emptyKey))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(.regularMaterial, in: Capsule())
+                    .padding(.horizontal, 28)
+                    .allowsHitTesting(false)
             }
-            Text(LocalizedStringKey(model.kind == .pitch ? "monitor.pitch.readoutHint" : "monitor.spectrum.readoutHint"))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped()
     }
 }
 
@@ -238,21 +303,13 @@ private struct MonitorTimelineControl: View {
             ), in: sliderRange) {
                 Text("monitor.browse.title")
             } onEditingChanged: { editing in
-                if editing { model.pause() }
+                if editing { model.beginSeeking() }
             }
             .tint(Color.pitcheeAccent)
-            .disabled(model.isBusy)
+            .disabled(model.isBusy || !model.hasAudio)
             .accessibilityValue(Text("monitor.position.a11y \(monitorSeconds(model.cursorTime))"))
             .accessibilityHint("monitor.browse.hint")
             .accessibilityIdentifier("monitor.seek")
-            HStack(alignment: .firstTextBaseline) {
-                Text(verbatim: monitorClock(model.availableRange.lowerBound))
-                Spacer(minLength: 12)
-                Text(verbatim: monitorClock(model.availableRange.upperBound))
-            }
-            .font(.caption.monospacedDigit())
-            .foregroundStyle(.secondary)
-
         }
     }
 }
@@ -260,12 +317,8 @@ private struct MonitorTimelineControl: View {
 private struct MonitorWindowMenu: View {
     let model: MonitorViewModel
 
-    private var selectedWindowLabel: LocalizedStringKey {
-        switch model.windowDuration {
-        case 5: "monitor.window.five"
-        case 30: "monitor.window.thirty"
-        default: "monitor.window.ten"
-        }
+    private var selectedWindowLabel: String {
+        "\(Int(model.windowDuration)) s"
     }
 
     var body: some View {
@@ -273,9 +326,9 @@ private struct MonitorWindowMenu: View {
             Picker("monitor.window.title", selection: Binding(
                 get: { model.windowDuration }, set: { model.setWindowDuration($0) }
             )) {
-                Text("monitor.window.five").tag(5.0)
-                Text("monitor.window.ten").tag(10.0)
-                Text("monitor.window.thirty").tag(30.0)
+                ForEach(MonitorViewModel.windowDurations, id: \.self) { seconds in
+                    Text(verbatim: "\(Int(seconds)) s").tag(seconds)
+                }
             }
         } label: {
             Label {
@@ -291,7 +344,7 @@ private struct MonitorWindowMenu: View {
         }
         .disabled(model.isBusy)
         .accessibilityLabel("monitor.window.title")
-        .accessibilityValue(Text(selectedWindowLabel))
+        .accessibilityValue(Text(verbatim: selectedWindowLabel))
         .accessibilityIdentifier("monitor.windowDuration")
     }
 }

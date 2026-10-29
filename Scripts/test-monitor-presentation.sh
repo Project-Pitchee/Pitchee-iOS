@@ -10,10 +10,11 @@ xcrun swiftc -parse-as-library -O -swift-version 6 -strict-concurrency=complete 
     "$project_directory/PitcheeApp/Interop/Core/AnalysisResult.swift" \
     "$project_directory/PitcheeApp/Analysis/PitchTimeline.swift" \
     "$project_directory/PitcheeApp/Monitoring/MonitorTimeline.swift" \
+    "$project_directory/PitcheeApp/Monitoring/MonitorSpectrumAnalyzer.swift" \
     "$project_directory/PitcheeApp/Monitoring/MonitorSpectrogramRasterizer.swift" \
     "$project_directory/PitcheeApp/Monitoring/MonitorPresentation.swift" \
     "$project_directory/Tests/Monitoring/MonitorPresentationTests.swift" \
-    -framework CoreGraphics \
+    -framework Accelerate -framework CoreGraphics \
     -o "$test_directory/monitor-presentation-tests"
 
 "$test_directory/monitor-presentation-tests"

@@ -186,6 +186,63 @@ nonisolated struct MonitorTimeline: Sendable {
         return max(range.lowerBound, current - distance)
     }
 
+    /// Selects a fixed-duration browse page aligned to the newest audio.
+    ///
+    /// A non-multiple recording has its short remainder at the beginning:
+    /// 23 seconds with a 5-second window becomes 0...3, 3...8, ... 18...23.
+    /// This keeps both the final page and every subsequent page exactly
+    /// windowDuration long while moving the cursor inside a page.
+    static func browsePage(
+        containing time: TimeInterval,
+        duration: TimeInterval,
+        availableRange: ClosedRange<TimeInterval>
+    ) -> ClosedRange<TimeInterval> {
+        let available = validRange(availableRange)
+        let length = duration.isFinite ? max(0.001, duration) : 0.001
+        let cursor = clampedTime(time, availableRange: available)
+        let total = available.upperBound - available.lowerBound
+
+        guard total > length else { return available }
+
+        let pageCount = Int(ceil(total / length))
+        let firstPageDuration = total - Double(pageCount - 1) * length
+        let firstPageEnd = available.lowerBound + firstPageDuration
+        guard cursor >= firstPageEnd else {
+            return available.lowerBound...firstPageEnd
+        }
+
+        let offset = cursor - firstPageEnd
+        let pageIndex = min(pageCount - 2, Int(floor(offset / length)))
+        let start = firstPageEnd + Double(pageIndex) * length
+        let end = min(available.upperBound, start + length)
+        return start...end
+    }
+
+    /// Returns a fixed-duration playback window aligned to the replay tail, so
+    /// the visible time never moves under a cursor that stays inside its page
+    /// and the final page always ends at the newest captured audio.
+    static func playbackPage(
+        containing time: TimeInterval,
+        duration: TimeInterval,
+        replayRange: ClosedRange<TimeInterval>,
+        availableRange: ClosedRange<TimeInterval>
+    ) -> ClosedRange<TimeInterval> {
+        let replay = validRange(replayRange)
+        let available = validRange(availableRange)
+        let length = duration.isFinite ? max(0.001, duration) : 0.001
+        if replay.upperBound - replay.lowerBound < length {
+            let start = max(available.lowerBound, replay.upperBound - length)
+            return start...(start + length)
+        }
+        let cursor = clampedTime(time, availableRange: replay)
+        let page = browsePage(
+            containing: cursor,
+            duration: duration,
+            availableRange: replay.lowerBound...min(replay.upperBound, available.upperBound)
+        )
+        return page
+    }
+
     private mutating func trimAnalysis() {
         let lower = availableRange.lowerBound
         let pitchCount = TimelineSearch.lowerBound(in: pitchSamples, at: lower, time: \.elapsedTime)

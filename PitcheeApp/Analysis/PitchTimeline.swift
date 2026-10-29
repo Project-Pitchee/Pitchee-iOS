@@ -92,7 +92,7 @@ nonisolated enum TimelineSearch {
 /// A display-sized snapshot of the scoring page's latest ten seconds. Capture
 /// keeps every detector frame; only this plotting copy is reduced.
 nonisolated struct ScoringPitchSnapshot: Sendable {
-    private static let visibleSeconds: TimeInterval = 10
+    private static let visibleSeconds: TimeInterval = 3
     private static let maximumPointCount = 640
 
     let samples: [LivePitchSample]

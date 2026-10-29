@@ -25,6 +25,8 @@ enum MonitorKind: String, CaseIterable, Identifiable {
 final class MonitorViewModel {
     enum State { case idle, preparing, live, paused, replaying }
 
+    nonisolated static let windowDurations: [TimeInterval] = [3, 5, 8, 10, 15, 30]
+
     let kind: MonitorKind
     private let includesSpectrogram: Bool
     private(set) var state: State = .idle
@@ -33,9 +35,13 @@ final class MonitorViewModel {
     private(set) var cursorTime: TimeInterval = 0
     private let presentation = MonitorPresentation()
     @ObservationIgnored private var playbackRange: ClosedRange<TimeInterval>?
+    @ObservationIgnored private var playbackPage: ClosedRange<TimeInterval>?
+    @ObservationIgnored private var browsePage: ClosedRange<TimeInterval>?
+    @ObservationIgnored private var resumesLiveAfterPlayback = false
 
     @ObservationIgnored private var capture: MonitorAudioCapture?
     @ObservationIgnored private var analyzer: PitcheeCoreAnalyzer?
+    @ObservationIgnored private var analyzerSettings: AnalyzerSettings?
     @ObservationIgnored private var player: AVAudioPlayer?
     @ObservationIgnored private var playerDelegate: MonitorPlaybackDelegate?
     @ObservationIgnored private var operation: Task<Void, Never>?
@@ -54,6 +60,8 @@ final class MonitorViewModel {
     init(kind: MonitorKind, includesSpectrogram: Bool = false) {
         self.kind = kind
         self.includesSpectrogram = includesSpectrogram
+        let stored = UserDefaults.standard.object(forKey: AppStorageKey.monitorWindowDuration) as? Double ?? 10
+        windowDuration = Self.windowDurations.contains(stored) ? stored : 10
     }
 
     var statusKey: String {
@@ -78,6 +86,7 @@ final class MonitorViewModel {
     }
 
     var visiblePitchRange: ClosedRange<Double>? { presentation.pitchWindow.pitchRange }
+    var visibleAveragePitchHz: Double? { presentation.pitchWindow.averagePitchHz }
 
     var visibleSpectrogramColumns: [MonitorSpectrogramColumn] {
         presentation.visibleSpectrogramColumns
@@ -108,6 +117,7 @@ final class MonitorViewModel {
         stopAudio()
         installObservers()
         errorMessage = nil
+        browsePage = nil
         cursorTime = presentation.duration
         state = .preparing
         refreshPresentation()
@@ -143,12 +153,14 @@ final class MonitorViewModel {
 
                 var preparedAnalyzer: PitcheeCoreAnalyzer?
                 if kind == .pitch {
-                    if analyzer == nil {
+                    let settings = AnalyzerSettings.current
+                    if analyzer == nil || analyzerSettings != settings {
                         let loaded = try await Task.detached(priority: .userInitiated) {
-                            try PitcheeCoreAnalyzer()
+                            try PitcheeCoreAnalyzer(settings: settings)
                         }.value
                         guard generation == token, !Task.isCancelled else { return }
                         analyzer = loaded
+                        analyzerSettings = settings
                     }
                     preparedAnalyzer = analyzer
                     try await preparedAnalyzer?.resetRealtimeF0()
@@ -221,33 +233,97 @@ final class MonitorViewModel {
         state = hasAudio ? .paused : .idle
     }
 
+    /// Called once when the slider gesture starts, before its first value
+    /// update. This avoids repeatedly tearing down capture for every drag tick.
+    func beginSeeking() {
+        guard sceneIsActive, hasAudio, !isBusy else { return }
+        if state == .live || state == .preparing || state == .replaying {
+            pause()
+        }
+        playbackRange = nil
+        playbackPage = nil
+        resumesLiveAfterPlayback = false
+        if browsePage == nil {
+            browsePage = MonitorTimeline.browsePage(
+                containing: cursorTime,
+                duration: windowDuration,
+                availableRange: availableRange
+            )
+        }
+        refreshPresentation()
+    }
+
     func seek(to time: TimeInterval) {
         guard sceneIsActive, hasAudio, !isBusy else { return }
-        pause()
+        // A direct accessibility adjustment may not deliver onEditingChanged.
+        if state == .live || state == .preparing || state == .replaying {
+            beginSeeking()
+        }
         playbackRange = nil
-        cursorTime = MonitorTimeline.clampedTime(time, availableRange: availableRange)
+        playbackPage = nil
+        resumesLiveAfterPlayback = false
+        let selectedTime = MonitorTimeline.clampedTime(time, availableRange: availableRange)
+        let page = MonitorTimeline.browsePage(
+            containing: selectedTime,
+            duration: windowDuration,
+            availableRange: availableRange
+        )
+        if browsePage != page { browsePage = page }
+        cursorTime = selectedTime
         refreshPresentation()
     }
 
     func rewindFiveSeconds() {
-        guard canRewind else { return }
+        // Rewind is a transport action, not just a cursor move: play from five
+        // seconds earlier through the live tail.
+        guard sceneIsActive, hasAudio, !isBusy, canRewind else { return }
+        let shouldResumeLive = resumesLiveAfterPlayback
+            || state == .live
+            || (state == .preparing && playbackRange == nil)
         pause()
-        playbackRange = nil
-        cursorTime = MonitorTimeline.rewind(time: cursorTime, by: 5, availableRange: availableRange)
-        refreshPresentation()
+        browsePage = nil
+        let tail = availableRange.upperBound
+        let start = max(availableRange.lowerBound, min(cursorTime, tail) - 5)
+        guard tail - start > 0.001 else {
+            playbackRange = nil
+            playbackPage = nil
+            refreshPresentation()
+            return
+        }
+        let audioRange = start...tail
+        let page = MonitorTimeline.playbackPage(
+            containing: start, duration: windowDuration,
+            replayRange: audioRange, availableRange: availableRange
+        )
+        beginPlayback(
+            audioRange: audioRange, startingAt: start, page: page,
+            resumesLive: shouldResumeLive
+        )
     }
 
     func setWindowDuration(_ seconds: TimeInterval) {
-        guard [5.0, 10, 30].contains(seconds) else { return }
+        guard Self.windowDurations.contains(seconds) else { return }
+        let keepsBrowsePage = browsePage != nil
         if state == .replaying || state == .preparing { pause() }
         playbackRange = nil
+        playbackPage = nil
+        browsePage = nil
+        resumesLiveAfterPlayback = false
         windowDuration = seconds
+        UserDefaults.standard.set(seconds, forKey: AppStorageKey.monitorWindowDuration)
+        if keepsBrowsePage, hasAudio {
+            browsePage = MonitorTimeline.browsePage(
+                containing: cursorTime,
+                duration: windowDuration,
+                availableRange: availableRange
+            )
+        }
         refreshPresentation()
     }
 
     /// Toggles the compact transport's middle control. A paused replay keeps
-    /// its original window so continuing starts at the current playhead rather
-    /// than rebuilding the window from scratch.
+    /// its original audio range so continuing starts at the current playhead
+    /// rather than rebuilding the range from scratch.
     func toggleReplay() {
         guard sceneIsActive, hasAudio, !isBusy else { return }
         if state == .replaying {
@@ -257,33 +333,64 @@ final class MonitorViewModel {
         if let playbackRange,
            state == .paused,
            cursorTime >= playbackRange.lowerBound,
-           cursorTime < playbackRange.upperBound {
-            beginPlayback(range: playbackRange, startingAt: cursorTime)
-        } else {
-            replayWindow()
+           cursorTime < playbackRange.upperBound - 0.001 {
+            let page = MonitorTimeline.playbackPage(
+                containing: cursorTime, duration: windowDuration,
+                replayRange: playbackRange, availableRange: availableRange
+            )
+            beginPlayback(
+                audioRange: playbackRange,
+                startingAt: cursorTime,
+                page: page,
+                resumesLive: resumesLiveAfterPlayback
+            )
+            return
         }
+        browsePage = nil
+        replayFromCursor()
     }
 
-    func replayWindow() {
+    private func replayFromCursor() {
         guard sceneIsActive, hasAudio, !isBusy else { return }
+        let shouldResumeLive = state == .live
+            || (state == .preparing && playbackRange == nil)
         pause()
-        var range = MonitorTimeline.window(
-            endingAt: cursorTime, duration: windowDuration, availableRange: availableRange
-        )
-        // At the beginning of the retained timeline there is no preceding
-        // audio, so start at the playhead and play forward through the window.
-        if range.upperBound <= range.lowerBound {
-            let start = MonitorTimeline.clampedTime(cursorTime, availableRange: availableRange)
-            let end = min(availableRange.upperBound, start + windowDuration)
-            range = start...end
+        browsePage = nil
+        let tail = availableRange.upperBound
+        let cursor = MonitorTimeline.clampedTime(cursorTime, availableRange: availableRange)
+        let start = cursor >= tail - 0.05
+            ? max(availableRange.lowerBound, tail - windowDuration)
+            : cursor
+        guard tail - start > 0.001 else {
+            playbackRange = nil
+            playbackPage = nil
+            resumesLiveAfterPlayback = false
+            refreshPresentation()
+            return
         }
-        beginPlayback(range: range, startingAt: range.lowerBound)
+        let audioRange = start...tail
+        let page = MonitorTimeline.playbackPage(
+            containing: start, duration: windowDuration,
+            replayRange: audioRange, availableRange: availableRange
+        )
+        beginPlayback(
+            audioRange: audioRange, startingAt: start, page: page,
+            resumesLive: shouldResumeLive
+        )
     }
 
-    private func beginPlayback(range: ClosedRange<TimeInterval>, startingAt: TimeInterval) {
-        let samples = presentation.audio(in: range)
+    private func beginPlayback(
+        audioRange: ClosedRange<TimeInterval>,
+        startingAt: TimeInterval,
+        page: ClosedRange<TimeInterval>,
+        resumesLive: Bool
+    ) {
+        // Encode the whole tail once so playback is gapless across chart pages.
+        let samples = presentation.audio(in: audioRange)
         guard !samples.isEmpty else {
             playbackRange = nil
+            playbackPage = nil
+            resumesLiveAfterPlayback = false
             refreshPresentation()
             return
         }
@@ -293,8 +400,10 @@ final class MonitorViewModel {
         let owner = UUID()
         sessionOwner = owner
         state = .preparing
-        playbackRange = range
-        let initialTime = min(range.upperBound, max(range.lowerBound, startingAt))
+        playbackRange = audioRange
+        playbackPage = page
+        resumesLiveAfterPlayback = resumesLive
+        let initialTime = min(audioRange.upperBound, max(audioRange.lowerBound, startingAt))
         cursorTime = initialTime
         refreshPresentation()
         let previousTeardown = audioTeardown
@@ -318,10 +427,14 @@ final class MonitorViewModel {
                 let delegate = MonitorPlaybackDelegate { [weak self] successful in
                     guard let self, generation == token else { return }
                     if successful {
-                        cursorTime = range.upperBound
+                        let shouldResumeLive = resumesLiveAfterPlayback
+                        cursorTime = audioRange.upperBound
                         stopAudio()
                         state = .paused
                         refreshPresentation()
+                        if shouldResumeLive, sceneIsActive {
+                            startOrResume()
+                        }
                     } else {
                         fail(String(localized: "monitor.error.playback"))
                     }
@@ -331,7 +444,7 @@ final class MonitorViewModel {
                 player = audioPlayer
                 audioPlayer.currentTime = min(
                     audioPlayer.duration,
-                    max(0, initialTime - range.lowerBound)
+                    max(0, initialTime - audioRange.lowerBound)
                 )
                 let played = await Task.detached(priority: .userInitiated) {
                     audioPlayer.play()
@@ -345,7 +458,7 @@ final class MonitorViewModel {
                 cursorTime = initialTime
                 state = .replaying
                 refreshPresentation()
-                startPlaybackClock(token: token, range: range)
+                startPlaybackClock(token: token, range: audioRange)
             } catch {
                 AudioSessionController.deactivate(owner: owner)
                 guard let self, generation == token, !Task.isCancelled else { return }
@@ -373,7 +486,11 @@ final class MonitorViewModel {
         presentation.reset(windowDuration: windowDuration, includesPitch: kind == .pitch)
         cursorTime = 0
         playbackRange = nil
+        playbackPage = nil
+        browsePage = nil
+        resumesLiveAfterPlayback = false
         analyzer = nil
+        analyzerSettings = nil
         errorMessage = nil
         state = .idle
     }
@@ -404,7 +521,7 @@ final class MonitorViewModel {
         if state == .live { cursorTime = presentation.duration }
         presentation.publish(
             cursorTime: cursorTime, windowDuration: windowDuration,
-            playbackRange: playbackRange, includesPitch: kind == .pitch
+            selectedRange: playbackPage ?? browsePage, includesPitch: kind == .pitch
         )
         needsPresentation = false
     }
@@ -413,7 +530,16 @@ final class MonitorViewModel {
         displayClock?.cancel()
         // Use elapsed wall time rather than capture timestamps: a burst of
         // queued PCM must not turn into an equally large burst of UI updates.
-        let interval: Duration = kind == .pitch ? .nanoseconds(33_333_334) : .milliseconds(100)
+        let f0Rate = max(
+            20,
+            min(
+                60,
+                UserDefaults.standard.object(forKey: AnalyzerSettingsKey.f0SampleRate) as? Int ?? 30
+            )
+        )
+        let interval: Duration = kind == .pitch
+            ? .milliseconds(Int64(max(1, 1_000 / f0Rate)))
+            : .milliseconds(100)
         displayClock = Task { [weak self] in
             while !Task.isCancelled {
                 do { try await Task.sleep(for: interval) } catch { return }
@@ -424,12 +550,20 @@ final class MonitorViewModel {
     }
 
     private func startPlaybackClock(token: UUID, range: ClosedRange<TimeInterval>) {
+        playbackClock?.cancel()
         playbackClock = Task { [weak self] in
             while !Task.isCancelled {
                 do { try await Task.sleep(for: .milliseconds(33)) } catch { return }
                 guard let self, generation == token, state == .replaying, let player else { return }
-                cursorTime = min(range.upperBound, range.lowerBound + player.currentTime)
+                let next = min(range.upperBound, range.lowerBound + player.currentTime)
+                cursorTime = next
+                let page = MonitorTimeline.playbackPage(
+                    containing: next, duration: windowDuration,
+                    replayRange: range, availableRange: availableRange
+                )
+                if playbackPage != page { playbackPage = page }
                 refreshPresentation()
+                if next >= range.upperBound - 0.001 { return }
             }
         }
     }
@@ -451,7 +585,11 @@ final class MonitorViewModel {
         player?.stop()
         player = nil
         playerDelegate = nil
-        if clearPlaybackRange { playbackRange = nil }
+        if clearPlaybackRange {
+            playbackRange = nil
+            playbackPage = nil
+            resumesLiveAfterPlayback = false
+        }
         let owner = sessionOwner
         sessionOwner = nil
         if let captureTeardown {

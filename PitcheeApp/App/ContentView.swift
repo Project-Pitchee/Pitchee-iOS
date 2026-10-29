@@ -31,6 +31,23 @@ struct ContentView: View {
     }
 
     var body: some View {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-score-rules-preview") {
+            NavigationStack {
+                ScoreExplanationView(
+                    result: DebugPreviewData.result,
+                    previousMetrics: DebugPreviewData.previousMetrics
+                )
+            }
+        } else {
+            appContent
+        }
+        #else
+        appContent
+        #endif
+    }
+
+    private var appContent: some View {
         Group {
             if completedOnboardingVersion >= OnboardingFlow.currentVersion {
                 MainTabView(
@@ -69,18 +86,37 @@ private struct MainTabView: View {
         #if DEBUG
         // Lets the isolated review simulator open this page without altering saved preferences.
         let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-about-preview") {
+            _selectedTab = State(initialValue: .about)
+        }
+        if arguments.contains("-piano-preview") {
+            _selectedTab = State(initialValue: .pianoKeys)
+        }
         if arguments.contains("-practice-hub-preview")
             || arguments.contains("-monitor-review-pitch")
             || arguments.contains("-monitor-review-spectrum")
-            || arguments.contains("-practice-spectrum-preview") {
+            || arguments.contains("-practice-spectrum-preview")
+            || arguments.contains("-practice-library-preview")
+            || arguments.contains("-scoring-preview")
+            || arguments.contains("-result-preview")
+            || arguments.contains("-result-bottleneck-preview") {
             _selectedTab = State(initialValue: .practice)
         }
-        if arguments.contains("-practice-spectrum-preview") {
+        if arguments.contains("-practice-library-preview") {
+            _practicePath = State(initialValue: [.library])
+        } else if arguments.contains("-practice-spectrum-preview") {
             _practicePath = State(initialValue: [.spectrogram])
         } else if arguments.contains("-monitor-review-pitch") {
             _practicePath = State(initialValue: [.pitch])
         } else if arguments.contains("-monitor-review-spectrum") {
             _practicePath = State(initialValue: [.spectrum])
+        } else if arguments.contains("-scoring-preview") {
+            _recordingModel = State(initialValue: .preview(state: .recording))
+            _practicePath = State(initialValue: [.scoring])
+        } else if arguments.contains("-result-preview")
+                    || arguments.contains("-result-bottleneck-preview") {
+            _recordingModel = State(initialValue: .preview(state: .completed))
+            _practicePath = State(initialValue: [.analysis])
         }
         #endif
     }
@@ -96,7 +132,7 @@ private struct MainTabView: View {
             .tag(AppTab.trends)
 
             NavigationStack(path: $practicePath) {
-                PracticeHubView()
+                PracticeHubView(path: $practicePath)
                     .navigationDestination(for: PracticeRoute.self) { route in
                         switch route {
                         case .scoring:
@@ -109,6 +145,8 @@ private struct MainTabView: View {
                             SpectrumMonitorView()
                         case .spectrogram:
                             PracticeSpectrumView()
+                        case .library:
+                            VoiceTrainingLibraryContentView()
                         }
                     }
             }
@@ -249,7 +287,7 @@ private struct PianoKeysView: View {
             }
         }
         .navigationTitle("piano.screen.title")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
         .task(id: scenePhase) {
             guard scenePhase == .active else { return }
             feedback.prepare()
