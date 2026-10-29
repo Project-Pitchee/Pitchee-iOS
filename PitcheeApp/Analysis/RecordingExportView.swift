@@ -1138,8 +1138,10 @@ private struct ExportResultChart: View {
             VoiceProfileReferenceChart(
                 femalePercentage: result.vfp.vfpStandardScore,
                 meanPitchHz: result.f0.meanHz,
+                medianPitchHz: pitchStatistics.medianHz,
                 pitchRangeHz: pitchRangeHz
             )
+            .frame(maxWidth: 360, alignment: .leading)
 
             Text("export.chart.result.caption")
                 .font(.system(size: 8.5))

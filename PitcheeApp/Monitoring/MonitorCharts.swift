@@ -108,18 +108,47 @@ struct MonitorPitchPlot: View {
     let samples: [LivePitchSample]
     let timeRange: ClosedRange<Double>
     let cursorTime: Double
+    let frequencyRange: ClosedRange<Double>
+    let averagePitch: Double?
+
+    init(
+        samples: [LivePitchSample],
+        timeRange: ClosedRange<Double>,
+        cursorTime: Double,
+        frequencyRange: ClosedRange<Double> = 50...1_000,
+        averagePitch: Double? = nil
+    ) {
+        self.samples = samples
+        self.timeRange = timeRange
+        self.cursorTime = cursorTime
+        self.frequencyRange = frequencyRange
+        self.averagePitch = averagePitch
+    }
 
     var body: some View {
         ZStack {
             // Grid text is independent of live samples. Keep it on its own
             // surface so a new trace does not resolve and lay it out again.
-            MonitorPitchGrid()
+            MonitorPitchGrid(frequencyRange: frequencyRange)
             MonitorPitchTimeAxis(
                 start: timeLabel(timeRange.lowerBound),
                 middle: timeLabel((timeRange.lowerBound + timeRange.upperBound) / 2),
                 end: timeLabel(timeRange.upperBound)
             )
-            MonitorPitchTrace(samples: samples, timeRange: timeRange, cursorTime: cursorTime)
+            MonitorPitchAverageLine(
+                averagePitch: averagePitch,
+                frequencyRange: frequencyRange
+            )
+            MonitorPitchTrace(
+                samples: samples,
+                timeRange: timeRange,
+                cursorTime: cursorTime,
+                frequencyRange: frequencyRange
+            )
+            .animation(
+                .easeOut(duration: 0.06),
+                value: timeRange.upperBound
+            )
         }
         .clipped()
     }
@@ -130,13 +159,15 @@ struct MonitorPitchPlot: View {
 }
 
 private struct MonitorPitchGrid: View {
+    let frequencyRange: ClosedRange<Double>
     @Environment(\.colorSchemeContrast) private var contrast
     @ScaledMetric(relativeTo: .caption2) private var scaledLabelSize = 11.0
 
     var body: some View {
         Canvas { context, size in
             let layout = MonitorChartLayout(size: size, labelSize: scaledLabelSize,
-                                            increasedContrast: contrast == .increased)
+                                            increasedContrast: contrast == .increased,
+                                            frequencyRange: frequencyRange)
             let plot = layout.plot
             layout.drawUnits(
                 vertical: String(localized: "monitor.unit.hertz"),
@@ -144,17 +175,40 @@ private struct MonitorPitchGrid: View {
                 in: &context
             )
 
-            let frequencies: [Double] = plot.height < 140 ? [1_000, 250, 50] : [1_000, 500, 250, 100, 50]
+            let frequencies = frequencyTicks(compact: plot.height < 140)
             for frequency in frequencies {
                 let y = layout.pitchY(frequency)
                 context.draw(layout.label(MonitorChartLayout.frequencyLabel(frequency)),
                              at: CGPoint(x: plot.minX - 8, y: y), anchor: .trailing)
                 layout.drawGrid(from: CGPoint(x: plot.minX, y: y),
                                 to: CGPoint(x: plot.maxX, y: y),
-                                baseline: frequency == 50, in: &context)
+                                baseline: frequency == frequencyRange.lowerBound, in: &context)
             }
 
         }
+    }
+
+    private func frequencyTicks(compact: Bool) -> [Double] {
+        let span = max(1, frequencyRange.upperBound - frequencyRange.lowerBound)
+        let step = span <= 120 ? 20.0
+            : span <= 250 ? 50
+            : span <= 600 ? 100
+            : 200
+        var ticks: [Double] = []
+        var frequency = ceil(frequencyRange.lowerBound / step) * step
+        while frequency <= frequencyRange.upperBound {
+            ticks.append(frequency)
+            frequency += step
+        }
+        if frequencyRange.contains(165), !ticks.contains(where: { abs($0 - 165) < 0.5 }) {
+            ticks.append(165)
+            ticks.sort()
+        }
+        if compact, ticks.count > 3 {
+            let middle = ticks[ticks.count / 2]
+            ticks = [ticks[0], middle, ticks[ticks.count - 1]]
+        }
+        return ticks
     }
 }
 
@@ -184,24 +238,91 @@ private struct MonitorPitchTimeAxis: View {
     }
 }
 
-private struct MonitorPitchTrace: View {
-    let samples: [LivePitchSample]
-    let timeRange: ClosedRange<Double>
-    let cursorTime: Double
+private struct MonitorPitchAverageLine: View {
+    let averagePitch: Double?
+    let frequencyRange: ClosedRange<Double>
     @Environment(\.colorSchemeContrast) private var contrast
     @ScaledMetric(relativeTo: .caption2) private var scaledLabelSize = 11.0
 
     var body: some View {
+        GeometryReader { geometry in
+            if let averagePitch,
+               averagePitch.isFinite,
+               frequencyRange.contains(averagePitch) {
+                let layout = MonitorChartLayout(
+                    size: geometry.size,
+                    labelSize: scaledLabelSize,
+                    increasedContrast: contrast == .increased,
+                    frequencyRange: frequencyRange
+                )
+                let y = layout.pitchY(averagePitch)
+                let labelY = max(layout.plot.minY + layout.labelSize * 0.7, y - 15)
+
+                Group {
+                    Rectangle()
+                        .fill(Color.pitcheeAccent.opacity(contrast == .increased ? 0.95 : 0.78))
+                        .frame(width: layout.plot.width, height: contrast == .increased ? 2.5 : 1.5)
+                        .position(x: layout.plot.midX, y: y)
+
+                    HStack(spacing: 3) {
+                        Text("analysis.pitchScale.averageMarker")
+                        Text(verbatim: "\(Int(averagePitch.rounded())) Hz")
+                    }
+                    .font(.system(size: layout.labelSize, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Color.pitcheeAccent)
+                    .monospacedDigit()
+                    .frame(width: layout.plot.width, alignment: .trailing)
+                    .position(x: layout.plot.midX, y: labelY)
+                }
+                .transition(.identity)
+                .animation(
+                    .easeOut(duration: 0.1),
+                    value: averagePitch
+                )
+            }
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+private struct MonitorPitchTrace: View, Animatable {
+    let samples: [LivePitchSample]
+    var timeRange: ClosedRange<Double>
+    var cursorTime: Double
+    let frequencyRange: ClosedRange<Double>
+    @AppStorage(AnalyzerSettingsKey.pitchChartStyle) private var chartStyle = PitchChartStyle.curve.rawValue
+    @AppStorage(AnalyzerSettingsKey.pitchGapMilliseconds) private var gapMilliseconds = 200.0
+    @Environment(\.colorSchemeContrast) private var contrast
+    @ScaledMetric(relativeTo: .caption2) private var scaledLabelSize = 11.0
+
+    var animatableData: AnimatablePair<Double, AnimatablePair<Double, Double>> {
+        get {
+            AnimatablePair(
+                timeRange.lowerBound,
+                AnimatablePair(timeRange.upperBound, cursorTime)
+            )
+        }
+        set {
+            timeRange = newValue.first...max(newValue.first + 0.001, newValue.second.first)
+            cursorTime = newValue.second.second
+        }
+    }
+
+    var body: some View {
         Canvas { context, size in
             let layout = MonitorChartLayout(size: size, labelSize: scaledLabelSize,
-                                            increasedContrast: contrast == .increased)
+                                            increasedContrast: contrast == .increased,
+                                            frequencyRange: frequencyRange)
             let plot = layout.plot
             let duration = max(0.001, timeRange.upperBound - timeRange.lowerBound)
+            let drawsDots = chartStyle == PitchChartStyle.dots.rawValue
+            let maximumGap = max(0.05, min(1.0, gapMilliseconds / 1_000))
             var trace = Path()
+            var dots = Path()
             var previousTime: Double?
             for sample in TimelineSearch.samples(in: samples, range: timeRange, time: \.elapsedTime) {
                 guard let pitch = sample.pitchHz,
-                      pitch.isFinite, (50...1_000).contains(pitch) else {
+                      pitch.isFinite, frequencyRange.contains(pitch) else {
                     previousTime = nil
                     continue
                 }
@@ -209,18 +330,27 @@ private struct MonitorPitchTrace: View {
                     x: plot.minX + plot.width * (sample.elapsedTime - timeRange.lowerBound) / duration,
                     y: layout.pitchY(pitch)
                 )
-                if let previousTime, (0...0.4).contains(sample.elapsedTime - previousTime) {
-                    trace.addLine(to: point)
+                if drawsDots {
+                    dots.addEllipse(in: CGRect(x: point.x - 2.2, y: point.y - 2.2,
+                                               width: 4.4, height: 4.4))
                 } else {
-                    trace.move(to: point)
+                    if let previousTime, (0...maximumGap).contains(sample.elapsedTime - previousTime) {
+                        trace.addLine(to: point)
+                    } else {
+                        trace.move(to: point)
+                    }
                 }
                 previousTime = sample.elapsedTime
             }
 
             context.clip(to: Path(plot.insetBy(dx: -6, dy: -6)))
-            context.stroke(trace, with: .color(.pitcheeAccent),
-                           style: StrokeStyle(lineWidth: contrast == .increased ? 3 : 2.4,
-                                              lineCap: .round, lineJoin: .round))
+            if drawsDots {
+                context.fill(dots, with: .color(.pitcheeAccent))
+            } else {
+                context.stroke(trace, with: .color(.pitcheeAccent),
+                               style: StrokeStyle(lineWidth: contrast == .increased ? 3 : 2.4,
+                                                  lineCap: .round, lineJoin: .round))
+            }
 
             guard !samples.isEmpty, timeRange.contains(cursorTime) else { return }
             let cursorX = plot.minX + plot.width * (cursorTime - timeRange.lowerBound) / duration
@@ -235,7 +365,7 @@ private struct MonitorPitchTrace: View {
             if let sample = TimelineSearch.latest(in: samples, at: cursorTime, time: \.elapsedTime),
                cursorTime - sample.elapsedTime <= 0.15,
                timeRange.contains(sample.elapsedTime), let pitch = sample.pitchHz,
-               pitch.isFinite, (50...1_000).contains(pitch) {
+               pitch.isFinite, frequencyRange.contains(pitch) {
                 let point = CGPoint(
                     x: plot.minX + plot.width * (sample.elapsedTime - timeRange.lowerBound) / duration,
                     y: layout.pitchY(pitch)
@@ -252,17 +382,26 @@ private struct MonitorChartLayout {
     let plot: CGRect
     let labelSize: Double
     let increasedContrast: Bool
+    let frequencyRange: ClosedRange<Double>
     var tickOffset: Double { labelSize / 2 + 11 }
 
     func pitchY(_ frequency: Double) -> Double {
-        plot.minY + plot.height * (1 - log(frequency / 50) / log(1_000.0 / 50))
+        let fraction = (frequency - frequencyRange.lowerBound)
+            / (frequencyRange.upperBound - frequencyRange.lowerBound)
+        return plot.minY + plot.height * (1 - min(1, max(0, fraction)))
     }
 
-    init(size: CGSize, labelSize: Double, increasedContrast: Bool) {
+    init(
+        size: CGSize,
+        labelSize: Double,
+        increasedContrast: Bool,
+        frequencyRange: ClosedRange<Double> = 50...1_000
+    ) {
         // Tick labels supplement the fully scalable readout and accessible
         // range description. Capping these preserves space for the trace.
         self.labelSize = min(14, max(10, labelSize))
         self.increasedContrast = increasedContrast
+        self.frequencyRange = frequencyRange
         let leftMargin = max(34, self.labelSize * 3.1)
         let topMargin = self.labelSize + 17
         let bottomMargin = self.labelSize + 19

@@ -164,7 +164,7 @@ nonisolated struct PitcheeF0Frame: Sendable {
 }
 nonisolated enum PitcheeScoreProfile: Sendable { case feminization, masculinization }
 actor PitcheeCoreAnalyzer {
-    init() throws {}
+    init(settings: AnalyzerSettings = .current) throws {}
     func resetRealtimeF0() throws {}
     func analyze(wavFile: URL, scoreProfile: PitcheeScoreProfile) throws -> PitcheeAnalysisResult {
         let file = try AVAudioFile(forReading: wavFile)
@@ -173,8 +173,8 @@ actor PitcheeCoreAnalyzer {
         if CaptureFixture.shared.analysisFails { throw CocoaError(.fileReadCorruptFile) }
         return PitcheeAnalysisResult(
             schemaVersion: 3, modelVersion: "lifecycle-test", scoreProfile: "feminization",
-            audio: .init(sourceSampleRate: 16_000, sourceChannels: 1, inputSeconds: 1, analyzedSeconds: 1),
-            vad: .init(segmentCount: 1, speechSeconds: 1, sileroSegmentCount: 1,
+            audio: .init(sourceSampleRate: 16_000, sourceChannels: 1, inputSeconds: 5, analyzedSeconds: 5),
+            vad: .init(segmentCount: 1, speechSeconds: 5, sileroSegmentCount: 1,
                        discardedBreathLikeCount: 0, trimmedSegmentCount: 0,
                        segments: [.init(startSeconds: 0, endSeconds: 1, speechStartSeconds: 0, speechEndSeconds: 1)]),
             f0: .init(windowSeconds: 0.1, meanHz: 200, standardDeviationHz: 0,

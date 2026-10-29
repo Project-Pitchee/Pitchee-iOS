@@ -14,6 +14,11 @@ enum RecordingLifecycleTests {
         let container = try ModelContainer(for: RecordingAssessment.self,
                                           configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         let context = container.mainContext
+        check(RecordingClock.string(0) == "00:00.0"
+              && RecordingClock.string(5) == "00:05.0"
+              && RecordingClock.string(60) == "01:00.0"
+              && RecordingClock.string(100) == "01:00.0",
+              "The recording clock uses tenths and clamps at sixty seconds")
 
         // Permission prompts make the scene inactive without leaving the app.
         fixture.reset()
@@ -266,12 +271,16 @@ enum RecordingLifecycleTests {
     }
 
     @MainActor
-    private static func waitFor(_ condition: () -> Bool) async {
+    private static func waitFor(
+        _ condition: () -> Bool,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) async {
         for _ in 0..<2_500 {
             if condition() { return }
             try? await Task.sleep(for: .milliseconds(2))
         }
-        preconditionFailure("Timed out waiting for a recording lifecycle transition")
+        preconditionFailure("Timed out waiting for a recording lifecycle transition at \(file):\(line)")
     }
 
     private static func settle() async {

@@ -8,7 +8,7 @@
 import SwiftUI
 import UIKit
 
-/// The primary icon and the six alternate icons shipped with the app.
+/// The primary icon and the three alternate icons shipped with the app.
 ///
 /// The raw values for the alternate icons intentionally match the app icon set
 /// names in the asset catalog. They are kept separate from the user-facing
@@ -16,11 +16,8 @@ import UIKit
 enum AppIconOption: String, CaseIterable, Identifiable {
     case defaultIcon = "default"
     case aquaEcho = "AquaEcho"
-    case aquaWave = "AquaWave"
     case coralNote = "CoralNote"
-    case coralSong = "CoralSong"
     case sageCub = "SageCub"
-    case sageHaven = "SageHaven"
 
     var id: String { rawValue }
 
@@ -38,23 +35,8 @@ enum AppIconOption: String, CaseIterable, Identifiable {
         switch self {
         case .defaultIcon: "about.appIcon.default.title"
         case .aquaEcho: "about.appIcon.aquaEcho.title"
-        case .aquaWave: "about.appIcon.aquaWave.title"
         case .coralNote: "about.appIcon.coralNote.title"
-        case .coralSong: "about.appIcon.coralSong.title"
         case .sageCub: "about.appIcon.sageCub.title"
-        case .sageHaven: "about.appIcon.sageHaven.title"
-        }
-    }
-
-    var detail: LocalizedStringKey {
-        switch self {
-        case .defaultIcon: "about.appIcon.default.description"
-        case .aquaEcho: "about.appIcon.aquaEcho.description"
-        case .aquaWave: "about.appIcon.aquaWave.description"
-        case .coralNote: "about.appIcon.coralNote.description"
-        case .coralSong: "about.appIcon.coralSong.description"
-        case .sageCub: "about.appIcon.sageCub.description"
-        case .sageHaven: "about.appIcon.sageHaven.description"
         }
     }
 
@@ -63,7 +45,12 @@ enum AppIconOption: String, CaseIterable, Identifiable {
             self = .defaultIcon
             return
         }
-        self.init(rawValue: alternateIconName)
+        switch alternateIconName {
+        case "AquaWave": self = .aquaEcho
+        case "CoralSong": self = .coralNote
+        case "SageHaven": self = .sageCub
+        default: self.init(rawValue: alternateIconName)
+        }
     }
 }
 
@@ -83,6 +70,10 @@ struct PersonalizationSettingsView: View {
 
     private var selectedTheme: AppThemeOption {
         AppThemeOption(rawValue: savedThemeSelection) ?? .twilt
+    }
+
+    private var selectedIconOption: AppIconOption {
+        AppIconOption(alternateIconName: selectedIconName) ?? .defaultIcon
     }
 
     private var supportsAlternateIcons: Bool {
@@ -107,8 +98,6 @@ struct PersonalizationSettingsView: View {
                 }
             } header: {
                 Text("settings.theme.sectionTitle")
-            } footer: {
-                Text("settings.theme.description")
             }
 
             Section {
@@ -118,7 +107,7 @@ struct PersonalizationSettingsView: View {
                     } label: {
                         AppIconOptionRow(
                             option: option,
-                            isSelected: selectedIconName == option.alternateIconName
+                            isSelected: selectedIconOption == option
                         )
                     }
                     .buttonStyle(.plain)
@@ -127,8 +116,6 @@ struct PersonalizationSettingsView: View {
                 }
             } header: {
                 Text("about.appIcon.sectionTitle")
-            } footer: {
-                Text("about.appIcon.footer")
             }
         }
         .listStyle(.insetGrouped)
@@ -174,14 +161,9 @@ private struct ThemeOptionRow: View {
                 appearance: appearance
             )
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(option.title(for: appearance))
-                    .font(.body.weight(.medium))
-                Text(option.detail)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            Text(option.title(for: appearance))
+                .font(.body.weight(.medium))
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .font(.title3)
@@ -208,15 +190,9 @@ struct AppIconOptionRow: View {
         HStack(spacing: 14) {
             AppIconThumbnail(assetName: option.previewAssetName)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(option.title)
-                    .font(.body.weight(.medium))
-                Text(option.detail)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            Text(option.title)
+                .font(.body.weight(.medium))
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .font(.title3)

@@ -36,6 +36,15 @@ enum AppStorageKey {
 
     /// JSON mapping of component identifiers to their selected widget size.
     static let dashboardComponentSizes = "insights.dashboard.componentSizes"
+
+    /// Selected source and text for the recording reference passage.
+    static let passageSource = "practice.passage.source"
+    static let officialPassageIndex = "practice.passage.officialIndex"
+    static let customPassageText = "practice.passage.customText"
+
+    /// Selected realtime chart window in seconds. Shared by pitch, spectrum
+    /// and spectrogram so every monitor reopens with the same window size.
+    static let monitorWindowDuration = "monitor.window.duration"
 }
 
 /// The onboarding flow revision the app currently ships.

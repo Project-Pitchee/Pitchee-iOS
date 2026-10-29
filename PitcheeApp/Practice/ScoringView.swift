@@ -17,35 +17,39 @@ struct ScoringView: View {
     @State private var showsRecordingError = false
 
     var body: some View {
-        GeometryReader { geometry in
-            let wide = geometry.size.width >= 700 && !dynamicTypeSize.isAccessibilitySize
-            ScrollView {
-                if wide {
-                    HStack(alignment: .top, spacing: 40) {
-                        ScoringReadout(model: model)
-                            .frame(width: 240, alignment: .leading)
-                        ScoringInstrument(model: model,
-                                          height: max(180, min(340, geometry.size.height - 180)))
+        ZStack {
+            Color(uiColor: .systemBackground)
+                .ignoresSafeArea()
+            ScoringPitchBackground(model: model)
+                .opacity(0.16)
+                .allowsHitTesting(false)
+                .ignoresSafeArea()
+            GeometryReader { geometry in
+                let wide = geometry.size.width >= 700 && !dynamicTypeSize.isAccessibilitySize
+                ScrollView {
+                    if wide {
+                        HStack(alignment: .top, spacing: 40) {
+                            ScoringReadout(model: model)
+                                .frame(width: 240, alignment: .leading)
+                            ScoringPassage()
+                        }
+                        .padding(.vertical, 28)
+                    } else {
+                        VStack(alignment: .leading, spacing: 28) {
+                            ScoringReadout(model: model)
+                            ScoringPassage()
+                        }
+                        .padding(.top, 24)
+                        .padding(.bottom, 20)
                     }
-                    .padding(.vertical, 28)
-                } else {
-                    VStack(alignment: .leading, spacing: 28) {
-                        ScoringReadout(model: model)
-                        ScoringInstrument(model: model,
-                                          height: dynamicTypeSize.isAccessibilitySize
-                                          ? 240 : max(220, min(360, geometry.size.height * 0.42)))
-                    }
-                    .padding(.top, 24)
-                    .padding(.bottom, 20)
                 }
+                .scrollBounceBehavior(.basedOnSize)
+                .scrollIndicators(.hidden)
+                .padding(.horizontal, wide ? 32 : 24)
+                .frame(maxWidth: 980)
+                .frame(maxWidth: .infinity)
             }
-            .scrollBounceBehavior(.basedOnSize)
-            .scrollIndicators(.hidden)
-            .padding(.horizontal, wide ? 32 : 24)
-            .frame(maxWidth: 980)
-            .frame(maxWidth: .infinity)
         }
-        .background(Color(uiColor: .systemBackground).ignoresSafeArea())
         .navigationTitle("recording.screen.title")
         .navigationBarTitleDisplayMode(.inline)
         .alert("recording.error.startFailed.title", isPresented: $showsRecordingError) {
@@ -110,7 +114,6 @@ private struct ScoringReadout: View {
             }
 
             ScoringElapsedTime(model: model)
-            MonitorFrequencyGauge(frequency: currentPitch, kind: .pitch)
         }
         .onReceive(model.$livePitchSamples.combineLatest(model.$state)
             .map { samples, state in
@@ -122,7 +125,7 @@ private struct ScoringReadout: View {
 
 private struct ScoringElapsedTime: View {
     let model: AnalysisViewModel
-    @State private var clock = scoringClock(0)
+    @State private var clock = RecordingClock.string(0)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -136,69 +139,66 @@ private struct ScoringElapsedTime: View {
                 .foregroundStyle(.secondary)
         }
         .accessibilityElement(children: .combine)
-        .onReceive(model.$elapsedTime.map(scoringClock).removeDuplicates()) { clock = $0 }
+        .onReceive(model.$elapsedTime.map(RecordingClock.string).removeDuplicates()) { clock = $0 }
     }
 }
 
-private struct ScoringInstrument: View {
-    let model: AnalysisViewModel
-    let height: CGFloat
+private struct ScoringPassage: View {
+    @AppStorage(AppStorageKey.passageSource) private var passageSource = ReadingPassageSource.official.rawValue
+    @AppStorage(AppStorageKey.officialPassageIndex) private var passageIndex = 0
+    @AppStorage(AppStorageKey.customPassageText) private var customPassageText = ""
+
+    private var passage: ReadingPassage {
+        ReadingPassageLibrary.selected(
+            source: passageSource,
+            officialIndex: passageIndex,
+            customText: customPassageText
+        )
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            ScoringPitchChart(model: model)
-                .frame(height: height)
-
-            VStack(alignment: .leading, spacing: 12) {
-                Text("recording.reference.title")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text("recording.reference.passage")
-                    .font(.body)
-                    .lineSpacing(7)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            Text("recording.controls.startRecording.subtitle")
-                .font(.caption)
+        VStack(alignment: .leading, spacing: 14) {
+            Text(verbatim: passage.title)
+                .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
+            Text(verbatim: passage.text)
+                .font(.body)
+                .lineSpacing(7)
                 .fixedSize(horizontal: false, vertical: true)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
-private struct ScoringPitchChart: View {
+private struct ScoringPitchBackground: View {
+    private static let visibleSeconds: TimeInterval = 3
+    private static let displayLag: TimeInterval = 0.08
+    private static let frequencyRange: ClosedRange<Double> = 120...300
+
     let model: AnalysisViewModel
     @State private var snapshot = ScoringPitchSnapshot(samples: [])
+    @State private var snapshotUpdatedAt = Date()
 
     var body: some View {
-        ZStack {
-            MonitorPitchPlot(samples: snapshot.samples,
-                             timeRange: snapshot.timeRange,
-                             cursorTime: snapshot.cursorTime)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("monitor.pitch.chart.a11y")
-                .accessibilityValue(Text("monitor.chart.range.a11y \(snapshot.timeRange.lowerBound.formatted()) \(snapshot.timeRange.upperBound.formatted()) \(snapshot.cursorTime.formatted())"))
+        TimelineView(.animation(minimumInterval: 1.0 / 60)) { timeline in
+            let elapsed = max(0, timeline.date.timeIntervalSince(snapshotUpdatedAt))
+            let cursorTime = min(
+                snapshot.cursorTime,
+                max(0, snapshot.cursorTime - Self.displayLag + elapsed)
+            )
+            let end = max(Self.visibleSeconds, cursorTime)
 
-            if snapshot.samples.isEmpty {
-                Text("monitor.signal.waitingHint")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color(uiColor: .systemBackground))
-                    .allowsHitTesting(false)
-            }
+            MonitorPitchPlot(
+                samples: snapshot.samples,
+                timeRange: (end - Self.visibleSeconds)...end,
+                cursorTime: cursorTime,
+                frequencyRange: Self.frequencyRange
+            )
+            .accessibilityHidden(true)
         }
         .onReceive(model.$livePitchSamples) { samples in
             snapshot = ScoringPitchSnapshot(samples: samples)
+            snapshotUpdatedAt = Date()
         }
     }
-}
-
-private func scoringClock(_ seconds: TimeInterval) -> String {
-    let tenths = Int((max(0, seconds) * 10).rounded())
-    return String(format: "%02d:%02d.%d", tenths / 600, (tenths / 10) % 60, tenths % 10)
 }

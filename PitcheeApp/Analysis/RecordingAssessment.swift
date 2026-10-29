@@ -42,6 +42,7 @@ final class RecordingAssessment {
     var capturedFinalScore: Double?
     var comparedToID: UUID?
     var comparisonFeedbackRawValue: String?
+    var audioFileName: String?
 
     // History keeps only scalar inputs; full window/segment arrays are decoded
     // on demand for detail/export. These caches never change the store schema.
@@ -57,7 +58,8 @@ final class RecordingAssessment {
         preference: VoicePreference? = nil,
         practice: PracticeContext? = nil,
         quality: RecordingQuality? = nil,
-        comparedToID: UUID? = nil
+        comparedToID: UUID? = nil,
+        audioFileName: String? = nil
     ) throws {
         self.id = id
         self.recordedAt = recordedAt
@@ -79,6 +81,7 @@ final class RecordingAssessment {
         scoringRulesVersion = practice?.scoringVersion ?? target.map { _ in VoiceDirectionScore.rulesVersion }
         capturedFinalScore = target.flatMap { $0 == .undecided ? nil : $0.score(for: result).finalScore }
         self.comparedToID = comparedToID
+        self.audioFileName = audioFileName
     }
 
     var practice: PracticeContext? { practiceCache.value(for: practicePayload, decoder: Self.decoder) }

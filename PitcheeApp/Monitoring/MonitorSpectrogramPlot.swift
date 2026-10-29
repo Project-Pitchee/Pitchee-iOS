@@ -24,7 +24,6 @@ struct MonitorSpectrogramPlot: View {
             }
         }
         .background(MonitorSpectrogramStyle.background)
-        .clipShape(.rect(cornerRadius: 16))
         .environment(\.layoutDirection, .leftToRight)
         .accessibilityIdentifier("monitor.spectrogram")
     }

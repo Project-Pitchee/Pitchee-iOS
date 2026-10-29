@@ -26,7 +26,9 @@ xcrun xcstringstool compile Resources/InfoPlist.xcstrings --output-directory "$t
 xcrun swiftc -parse-as-library -swift-version 5 \
     -default-isolation MainActor -strict-concurrency=complete -warnings-as-errors \
     PitcheeApp/Interop/Core/AnalysisResult.swift \
-    -I "$core_scoring_module_directory" "$core_scoring_object" -lc++ \
+    -I "$core_scoring_module_directory" \
+    -Xcc -I"$project_directory/Dependencies/PitcheeCore/include" \
+    "$core_scoring_object" -lc++ \
     PitcheeApp/Analysis/VoiceScoring.swift \
     PitcheeApp/Practice/PracticeData.swift \
     Tests/Localization/LocalizationRuntimeTests.swift \

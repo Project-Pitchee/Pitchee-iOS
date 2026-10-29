@@ -33,14 +33,6 @@ enum AppThemeOption: String, CaseIterable, Identifiable, Equatable {
         gradientStyle?.name(for: appearance) ?? "Pure"
     }
 
-    /// Describes the plain background or the paired gradient names in the picker.
-    var detail: String {
-        guard let gradientStyle else {
-            return String(localized: "settings.theme.pure.description")
-        }
-        return "\(gradientStyle.lightName) ↔ \(gradientStyle.darkName)"
-    }
-
     /// Tinted neutrals carry the text and readings. Muted, related accent
     /// colors are reserved for symbols and charts, keeping the gradient the
     /// most colorful layer. A quiet surface supports text without neon tints.

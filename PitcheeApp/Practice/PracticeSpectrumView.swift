@@ -16,31 +16,27 @@ struct PracticeSpectrumView: View {
     @Environment(\.monitorAccessoryState) private var accessoryState
 
     var body: some View {
-        GeometryReader { geometry in
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    PracticeSpectrumReadout(model: model)
-                    PracticeSpectrumInstrument(model: model)
-                        .frame(height: max(300, min(640, geometry.size.height - 230)))
-                    MonitorSpectrogramLegend()
-                    if model.hasAudio {
-                        PracticeSpectrumTimeline(model: model)
-                    }
-                    Text("monitor.spectrogram.readoutHint")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 20)
-                .frame(maxWidth: 980)
-                .frame(maxWidth: .infinity)
+        VStack(alignment: .leading, spacing: 0) {
+            PracticeSpectrumReadout(model: model)
+                .padding(.horizontal, 16)
+                .padding(.top, 4)
+                .padding(.bottom, 8)
+            PracticeSpectrumInstrument(model: model)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            MonitorSpectrogramLegend()
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+            if model.hasAudio {
+                PracticeSpectrumTimeline(model: model)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 8)
             }
-            .scrollBounceBehavior(.basedOnSize)
         }
         .background(Color(uiColor: .systemBackground).ignoresSafeArea())
         .navigationTitle("practice.spectrum.title")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
+        .toolbarBackground(.hidden, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 PracticeSpectrumSettings(model: model)
@@ -203,9 +199,9 @@ private struct PracticeSpectrumSettings: View {
             Picker("monitor.window.title", selection: Binding(
                 get: { model.windowDuration }, set: { model.setWindowDuration($0) }
             )) {
-                Text("monitor.window.five").tag(5.0)
-                Text("monitor.window.ten").tag(10.0)
-                Text("monitor.window.thirty").tag(30.0)
+                ForEach(MonitorViewModel.windowDurations, id: \.self) { seconds in
+                    Text(verbatim: "\(Int(seconds)) s").tag(seconds)
+                }
             }
         } label: {
             Label("monitor.spectrum.settings", systemImage: "gearshape")

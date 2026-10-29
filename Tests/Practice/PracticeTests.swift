@@ -20,6 +20,10 @@ enum PracticeTests {
             RecordingQuality(speechSeconds: speech, speechDBFS: level, backgroundDBFS: background, clippedFraction: clipped)
         }
         check(quality().canCompare, "Adequate capture is eligible")
+        check(RecordingQuality.hasMinimumSpeech(5)
+              && !RecordingQuality.hasMinimumSpeech(4.99)
+              && !RecordingQuality.hasMinimumSpeech(.nan),
+              "The five-second VAD gate is finite and inclusive")
         check(!quality(4.99).canCompare && quality(5).canCompare, "Speech boundary is inclusive at five seconds")
         check(quality(level: -45).canCompare == false, "Low separation independently excludes a borderline level")
         check(quality(level: -45, background: -60).canCompare, "The level threshold is inclusive")

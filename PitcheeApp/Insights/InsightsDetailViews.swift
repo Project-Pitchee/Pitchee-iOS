@@ -207,6 +207,8 @@ private struct InsightsRecordingRows: View {
 struct RecordingHistoryDetailView: View {
     let assessment: RecordingAssessment
     @AppStorage(AppStorageKey.voicePreference) private var savedVoicePreference = ""
+    @Query(sort: \RecordingAssessment.recordedAt, order: .reverse)
+    private var assessments: [RecordingAssessment]
 
     private var voicePreference: VoicePreference {
         assessment.recordedTarget
@@ -223,6 +225,12 @@ struct RecordingHistoryDetailView: View {
                     saveError: nil,
                     quality: assessment.quality,
                     recordedPreference: assessment.recordedTarget,
+                    playbackAudioURL: assessment.audioFileName.flatMap {
+                        RecordingAudioStore.url(for: $0)
+                    },
+                    previousScore: previousMetrics?.finalScore,
+                    previousMetrics: previousMetrics,
+                    animatesScore: false,
                     showsBackground: false
                 )
                     .toolbar {
@@ -248,6 +256,29 @@ struct RecordingHistoryDetailView: View {
         .navigationTitle(Text(assessment.recordedAt, format: .dateTime.month().day().hour().minute()))
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.automatic, for: .navigationBar)
+    }
+
+    private var previousMetrics: PreviousScoreMetrics? {
+        guard let previous = assessments.first(where: { $0.recordedAt < assessment.recordedAt }) else {
+            return nil
+        }
+        if let previousResult = previous.result {
+            let score = voicePreference.score(for: previousResult)
+            return PreviousScoreMetrics(
+                finalScore: score.finalScore,
+                standardScore: score.standardScore,
+                naturalnessScore: score.naturalnessScore,
+                meanPitchHz: previousResult.f0.meanHz
+            )
+        }
+        return PreviousScoreMetrics(
+            finalScore: previous.finalScore(for: voicePreference),
+            standardScore: voicePreference == .masculine
+                ? 100 - previous.standardScore
+                : previous.standardScore,
+            naturalnessScore: previous.naturalnessScore,
+            meanPitchHz: previous.meanPitchHz
+        )
     }
 }
 
@@ -290,6 +321,7 @@ struct InsightsMetricDetailView: View {
             }
         }
     }
+
 }
 
 /// Immutable chart inputs are derived when history, range, or preference changes.

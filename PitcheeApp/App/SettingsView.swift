@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UIKit
+import Foundation
 
 struct SettingsView: View {
     @AppStorage(AppStorageKey.voicePreference) private var savedVoicePreference = ""
@@ -14,6 +15,10 @@ struct SettingsView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
     @State private var selectedIconName = UIApplication.shared.alternateIconName
+    #if DEBUG
+    @State private var debugRoute: SettingsDebugRoute?
+    @State private var didApplyDebugRoute = false
+    #endif
 
     private var selectedVoice: VoicePreference {
         VoicePreference(legacyStoredValue: savedVoicePreference) ?? .undecided
@@ -32,7 +37,7 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("settings.screen.title") {
+            Section {
                 NavigationLink {
                     VoicePreferenceSettingsView(selection: voicePreference)
                 } label: {
@@ -57,7 +62,7 @@ struct SettingsView: View {
                 .accessibilityIdentifier("settings.privacy")
             }
 
-            Section("settings.personalization.sectionTitle") {
+            Section {
                 NavigationLink {
                     PersonalizationSettingsView()
                 } label: {
@@ -65,14 +70,11 @@ struct SettingsView: View {
                         ThemeThumbnail(
                             theme: selectedTheme,
                             appearance: currentAppearance,
-                            size: 36
+                            size: 28
                         )
-                        VStack(alignment: .leading, spacing: 3) {
+                        VStack(alignment: .leading) {
                             Text("settings.theme.sectionTitle")
                                 .font(.subheadline.weight(.medium))
-                            Text(selectedTheme.title(for: currentAppearance))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .overlay(alignment: .trailing) {
@@ -89,29 +91,97 @@ struct SettingsView: View {
                 .accessibilityIdentifier("settings.personalization")
             }
 
-            Section("about.app.title") {
+            Section {
+                NavigationLink {
+                    ReadingPassagesSettingsView()
+                } label: {
+                    SettingsLabel(
+                        verbatim: SettingsCopy.text("朗读语料", "Reading Passages"),
+                        systemImage: "text.book.closed.fill",
+                        tint: .orange
+                    )
+                }
+                .accessibilityIdentifier("settings.passages")
+
+                NavigationLink {
+                    F0SettingsView()
+                } label: {
+                    SettingsLabel(
+                        verbatim: SettingsCopy.text("F0 与性能", "F0 & Performance"),
+                        systemImage: "tuningfork",
+                        tint: .teal
+                    )
+                }
+                .accessibilityIdentifier("settings.f0")
+            }
+
+            Section {
                 LabeledContent("about.app.version.label", value: appVersion)
                 LabeledContent("about.app.analysisEngine.label", value: "PitcheeCore")
             }
 
-            Section("settings.localTools.title") {
-                NavigationLink {
-                    LocalDiagnosticsView()
-                } label: {
-                    Label("settings.localDiagnostics.title", systemImage: "waveform.path.ecg")
+            Section {
+                Link(destination: repositoryURL) {
+                    HStack(spacing: 12) {
+                        Image("GitHub")
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 20, height: 20)
+                            .foregroundStyle(.primary)
+                            .frame(width: 28, height: 28)
+                            .background(
+                                Color.primary.opacity(0.08),
+                                in: RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            )
+                            .accessibilityHidden(true)
+                        Text(verbatim: SettingsCopy.text("项目仓库", "Repository"))
+                        Spacer(minLength: 8)
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .accessibilityIdentifier("settings.repository")
                 }
-                NavigationLink {
-                    LocalScoreStudyView()
-                } label: {
-                    Label("scoreStudy.settings.title", systemImage: "chart.bar.xaxis")
+                Link(destination: licenseURL) {
+                    SettingsLabel(
+                        verbatim: SettingsCopy.text("开源许可证", "Open-source Licenses"),
+                        systemImage: "doc.text.fill",
+                        tint: .brown
+                    )
                 }
             }
         }
         .formStyle(.grouped)
         .navigationTitle("about.screen.title")
         .navigationBarTitleDisplayMode(.large)
+        #if DEBUG
+        .navigationDestination(item: $debugRoute) { route in
+            switch route {
+            case .f0:
+                F0SettingsView()
+            case .passages:
+                ReadingPassagesSettingsView()
+            case .personalization:
+                PersonalizationSettingsView()
+            }
+        }
+        #endif
         .onAppear {
             selectedIconName = UIApplication.shared.alternateIconName
+            #if DEBUG
+            if !didApplyDebugRoute {
+                didApplyDebugRoute = true
+                let arguments = ProcessInfo.processInfo.arguments
+                if arguments.contains("-f0-settings-preview") {
+                    debugRoute = .f0
+                } else if arguments.contains("-passages-settings-preview") {
+                    debugRoute = .passages
+                } else if arguments.contains("-personalization-preview") {
+                    debugRoute = .personalization
+                }
+            }
+            #endif
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
@@ -131,15 +201,37 @@ struct SettingsView: View {
     private var selectedAppIcon: AppIconOption {
         AppIconOption(alternateIconName: selectedIconName) ?? .defaultIcon
     }
+
+    private var repositoryURL: URL {
+        URL(string: "https://github.com/project-pitchee/Pitchee-iOS")!
+    }
+
+    private var licenseURL: URL {
+        URL(string: "https://github.com/project-pitchee/Pitchee-iOS/blob/main/LICENSE.txt")!
+    }
 }
 
+#if DEBUG
+private enum SettingsDebugRoute: Hashable {
+    case f0
+    case passages
+    case personalization
+}
+#endif
+
 private struct SettingsLabel: View {
-    let title: LocalizedStringKey
+    let text: Text
     let systemImage: String
     let tint: Color
 
     init(_ title: LocalizedStringKey, systemImage: String, tint: Color) {
-        self.title = title
+        text = Text(title)
+        self.systemImage = systemImage
+        self.tint = tint
+    }
+
+    init(verbatim title: String, systemImage: String, tint: Color) {
+        text = Text(verbatim: title)
         self.systemImage = systemImage
         self.tint = tint
     }
@@ -147,7 +239,7 @@ private struct SettingsLabel: View {
     var body: some View {
         HStack(spacing: 12) {
             SettingsIcon(systemImage: systemImage, tint: tint)
-            Text(title)
+            text
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
