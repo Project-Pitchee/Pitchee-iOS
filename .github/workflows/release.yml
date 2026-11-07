@@ -1,0 +1,70 @@
+name: Release validation
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Version tag to validate, for example v1.2.0
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-validation-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validate requested tag shape
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          python3 - <<'PY'
+          import os, re
+          tag = os.environ['RELEASE_TAG']
+          if not re.fullmatch(r'v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)', tag):
+              raise SystemExit('Release requires a vX.Y.Z version tag.')
+          PY
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ github.event.release.tag_name || inputs.tag }}
+          submodules: recursive
+          persist-credentials: false
+      - name: Compare tag with project marketing version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: python3 Scripts/ci/release-validation.py
+      - name: Check generated articles
+        id: articles
+        run: python3 Scripts/build-voice-training-library.py --check
+      - name: Validate localizations
+        id: localizations
+        if: ${{ !cancelled() }}
+        run: python3 Scripts/validate-localizations.py
+      - name: Record release validation result
+        if: always()
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          ARTICLES_OUTCOME: ${{ steps.articles.outcome }}
+          LOCALIZATIONS_OUTCOME: ${{ steps.localizations.outcome }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          report = '\n'.join([
+              '## Release validation',
+              f"- Articles: {os.environ['ARTICLES_OUTCOME']}",
+              f"- Localizations: {os.environ['LOCALIZATIONS_OUTCOME']}",
+              '- The vX.Y.Z tag starts the Xcode Cloud Release archive and TestFlight workflow.',
+              '- Beta Review and App Store submission remain manual.',
+          ]) + '\n'
+          with Path(os.environ['GITHUB_STEP_SUMMARY']).open('a') as out:
+              out.write(report)
+          PY

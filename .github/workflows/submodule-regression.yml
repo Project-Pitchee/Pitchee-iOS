@@ -1,0 +1,155 @@
+name: Submodule regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - Dependencies/PitcheeCore
+      - Docs/Voice-Training-Library
+
+permissions:
+  contents: read
+
+concurrency:
+  group: submodule-regression-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      core_changed: ${{ steps.diff.outputs.core_changed }}
+      core_old: ${{ steps.diff.outputs.core_old }}
+      core_new: ${{ steps.diff.outputs.core_new }}
+      articles_changed: ${{ steps.diff.outputs.articles_changed }}
+      articles_old: ${{ steps.diff.outputs.articles_old }}
+      articles_new: ${{ steps.diff.outputs.articles_new }}
+      base: ${{ steps.diff.outputs.base }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Resolve changed gitlinks
+        id: diff
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 Scripts/ci/detect_submodule_changes.py --base "$BASE_SHA" --head "$HEAD_SHA"
+
+  core:
+    needs: changes
+    if: needs.changes.outputs.core_changed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: macos-26
+    timeout-minutes: 45
+    # Configure required reviewers before adding the private fixture URL. This
+    # job executes the candidate Core; approval must cover the complete PR head.
+    environment: core-regression-fixtures
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          submodules: recursive
+          persist-credentials: false
+      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          python-version: '3.13'
+      - name: Read private fixtures into temporary storage
+        env:
+          PITCHEE_CORE_FIXTURES_URL: ${{ secrets.PITCHEE_CORE_FIXTURES_URL }}
+          PITCHEE_CORE_FIXTURES_SHA256: ${{ vars.PITCHEE_CORE_FIXTURES_SHA256 }}
+        run: python3 Scripts/ci/private_core_fixtures.py
+      - name: Install native runtime
+        run: bash Scripts/bootstrap-native-dependencies.sh
+      - name: Compare all fields, independent HNR and readiness
+        env:
+          OLD_CORE: ${{ needs.changes.outputs.core_old }}
+          NEW_CORE: ${{ needs.changes.outputs.core_new }}
+        run: python3 Scripts/ci/core_regression.py --old "$OLD_CORE" --new "$NEW_CORE" --output regression-output/core
+      - name: Remove private fixtures before artifacts
+        if: always()
+        run: rm -rf -- "$RUNNER_TEMP/pitchee-core-fixtures"
+      - name: Preserve an explicit failure report
+        if: always()
+        run: |
+          mkdir -p regression-output/core
+          if [ ! -f regression-output/core/report.md ]; then
+            printf '%s\n' '## Core checkpoint differences' '' '**Execution failure:** setup or comparison did not complete. No missing check is a zero difference. See this run for the failed prerequisite.' > regression-output/core/report.md
+            cat regression-output/core/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Retain numeric output only
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: core-regression-raw
+          path: |
+            regression-output/core/**/*.json
+            regression-output/core/**/*.log
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Retain comment text
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: core-regression-report
+          path: regression-output/core/report.md
+          retention-days: 30
+          if-no-files-found: error
+  fork-core:
+    needs: changes
+    if: needs.changes.outputs.core_changed == 'true' && github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require a trusted branch for private samples
+        run: |
+          echo '::error::Core regression needs private audio fixtures, which are unavailable to forks. A maintainer must review this head, bring it to a trusted repository branch, and run the protected core-regression-fixtures job. No Core comparison has run.'
+          exit 2
+
+  articles:
+    needs: changes
+    if: needs.changes.outputs.articles_changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          submodules: recursive
+          persist-credentials: false
+      - name: Rebuild and check Articles
+        env:
+          OLD_ARTICLES: ${{ needs.changes.outputs.articles_old }}
+          NEW_ARTICLES: ${{ needs.changes.outputs.articles_new }}
+          BASE_SHA: ${{ needs.changes.outputs.base }}
+        run: python3 Scripts/ci/articles_regression.py --old "$OLD_ARTICLES" --new "$NEW_ARTICLES" --base "$BASE_SHA" --output regression-output/articles
+      - name: Preserve an explicit failure report
+        if: always()
+        run: |
+          mkdir -p regression-output/articles
+          if [ ! -f regression-output/articles/report.md ]; then
+            printf '%s\n' '## Articles checkpoint differences' '' '**Execution failure:** setup or comparison did not complete; see the failed prerequisite in this run.' > regression-output/articles/report.md
+            cat regression-output/articles/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Retain Articles outputs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: articles-regression-raw
+          path: |
+            regression-output/articles/*.json
+            regression-output/articles/*.log
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Retain comment text
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: articles-regression-report
+          path: regression-output/articles/report.md
+          retention-days: 30
+          if-no-files-found: error

@@ -1,0 +1,636 @@
+{
+  "schemaVersion": "2.0.0",
+  "sourceSHA256": "986ca7c3613159a13201129805f535c78b33f12b1613d93a530869e0c83f0f1c",
+  "description": "Pitchee iOS App Embedded Voice Training Text Resource Library",
+  "totalArticles": 20,
+  "articles": [
+    {
+      "id": "practice/01-vfp",
+      "language": "en",
+      "title": "Low Timbre Score: Stop Forcing the Voice",
+      "category": "timbre",
+      "filename": "practice/en/01-vfp.md",
+      "summary": "A low timbre score means the recording does not sound feminine enough overall.",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "Low Timbre Score: Stop Forcing the Voice",
+          "body": "A low timbre score means the recording does not sound feminine enough overall.\n\nIt indicates that the current resonance and intonation do not give the system enough feminine vocal features.\n\nPitch can be high while the timbre score remains low. You can speak at 200 Hz and still sound thick, muffled, pressed, or obviously put on."
+        },
+        {
+          "heading": "Common mistakes",
+          "body": "### Pushing pitch only\n\nPitch is only one part of timbre. If pitch rises while the voice remains thick, muffled, or artificial, the timbre score will not improve.\n\n### Clamping continuously\n\nClamping the voice may brighten short phrases immediately, but the voice easily becomes tighter and naturalness falls with it.\n\n### Using breathy voice continuously\n\nBreathy voice is not the same as feminine voice. Too much air weakens the sound and may prevent reliable pitch detection."
+        },
+        {
+          "heading": "Practice",
+          "body": "### 1. Record a baseline\n\nRead in your normal voice:\n\n> Adlerian psychology divides interpersonal problems into “my tasks” and “other people’s tasks.”\n\nDo not press the voice down deliberately or clamp upward at the start. Keep this recording as the baseline.\n\n### 2. Release the mouth and tongue\n\nGently move the jaw, tongue, and lips. At a comfortable volume, hum `m` and then move into `ma` and `me`.\n\nThe voice only needs to come out smoothly. Stop if you feel pain, squeezing, or obvious strain.\n\n### 3. Focus the sound\n\nRead the passage again, this time focusing on clear articulation. Do not trap the sound at the back of the mouth.\n\nDo not raise pitch, increase volume, and switch to breathy voice at the same time. Change one variable at a time.\n\n### 4. Test with a new sentence\n\n> Stoicism divides things into two categories: what is within your control and what is not.\n\nIf only the practice passage improves and a new sentence falls apart, the change has not been learned yet."
+        },
+        {
+          "heading": "Daily practice",
+          "body": "Practice for 10 to 15 minutes a day. Rotate three kinds of material:\n\n1. One prepared sentence.\n2. A 20-second reading passage.\n3. One improvised answer.\n\nThen record at least 5 seconds in Pitchee and check the change in timbre score. The timbre model was trained on connected speech, so speak normally and do not record a sustained vowel."
+        },
+        {
+          "heading": "When to stop",
+          "body": "Stop if you feel pain, persistent hoarseness, obvious strain, or a voice that takes a long time to recover after speaking."
+        },
+        {
+          "heading": "References",
+          "body": "1. Doukhan, D. et al. (2023). *Voice Passing: a Non-Binary Voice Gender Prediction System for evaluating Transgender voice transition*. Interspeech 2023. https://doi.org/10.21437/Interspeech.2023-1835\n2. American Speech-Language-Hearing Association. *Gender affirming voice and communication*. https://www.asha.org/practice-portal/professional-issues/gender-affirming-voice-and-communication/\n3. National Institute on Deafness and Other Communication Disorders. *Taking care of your voice*. https://www.nidcd.nih.gov/health/taking-care-your-voice"
+        }
+      ],
+      "rawContent": "# Low Timbre Score: Stop Forcing the Voice\n\nA low timbre score means the recording does not sound feminine enough overall.\n\nIt indicates that the current resonance and intonation do not give the system enough feminine vocal features.\n\nPitch can be high while the timbre score remains low. You can speak at 200 Hz and still sound thick, muffled, pressed, or obviously put on.\n\n## Common mistakes\n\n### Pushing pitch only\n\nPitch is only one part of timbre. If pitch rises while the voice remains thick, muffled, or artificial, the timbre score will not improve.\n\n### Clamping continuously\n\nClamping the voice may brighten short phrases immediately, but the voice easily becomes tighter and naturalness falls with it.\n\n### Using breathy voice continuously\n\nBreathy voice is not the same as feminine voice. Too much air weakens the sound and may prevent reliable pitch detection.\n\n## Practice\n\n### 1. Record a baseline\n\nRead in your normal voice:\n\n> Adlerian psychology divides interpersonal problems into “my tasks” and “other people’s tasks.”\n\nDo not press the voice down deliberately or clamp upward at the start. Keep this recording as the baseline.\n\n### 2. Release the mouth and tongue\n\nGently move the jaw, tongue, and lips. At a comfortable volume, hum `m` and then move into `ma` and `me`.\n\nThe voice only needs to come out smoothly. Stop if you feel pain, squeezing, or obvious strain.\n\n### 3. Focus the sound\n\nRead the passage again, this time focusing on clear articulation. Do not trap the sound at the back of the mouth.\n\nDo not raise pitch, increase volume, and switch to breathy voice at the same time. Change one variable at a time.\n\n### 4. Test with a new sentence\n\n> Stoicism divides things into two categories: what is within your control and what is not.\n\nIf only the practice passage improves and a new sentence falls apart, the change has not been learned yet.\n\n## Daily practice\n\nPractice for 10 to 15 minutes a day. Rotate three kinds of material:\n\n1. One prepared sentence.\n2. A 20-second reading passage.\n3. One improvised answer.\n\nThen record at least 5 seconds in Pitchee and check the change in timbre score. The timbre model was trained on connected speech, so speak normally and do not record a sustained vowel.\n\n## When to stop\n\nStop if you feel pain, persistent hoarseness, obvious strain, or a voice that takes a long time to recover after speaking.\n\n## References\n\n1. Doukhan, D. et al. (2023). *Voice Passing: a Non-Binary Voice Gender Prediction System for evaluating Transgender voice transition*. Interspeech 2023. https://doi.org/10.21437/Interspeech.2023-1835\n2. American Speech-Language-Hearing Association. *Gender affirming voice and communication*. https://www.asha.org/practice-portal/professional-issues/gender-affirming-voice-and-communication/\n3. National Institute on Deafness and Other Communication Disorders. *Taking care of your voice*. https://www.nidcd.nih.gov/health/taking-care-your-voice\n"
+    },
+    {
+      "id": "practice/02-naturalness",
+      "language": "en",
+      "title": "Low Naturalness: Return the Voice to Normal Speech",
+      "category": "naturalness",
+      "filename": "practice/en/02-naturalness.md",
+      "summary": "Low naturalness means the recording does not sound like normal speech.",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine",
+        "masculine",
+        "undecided"
+      ],
+      "sections": [
+        {
+          "heading": "Low Naturalness: Return the Voice to Normal Speech",
+          "body": "Low naturalness means the recording does not sound like normal speech.\n\nThe voice may be too forceful, too artificial, or affected by poor recording conditions.\n\nLow naturalness does not mean the voice is damaged. It means the delivery has moved away from everyday speech."
+        },
+        {
+          "heading": "Stop adding techniques",
+          "body": "When naturalness is low, many people respond by learning more bright voice, sweet voice, breathy voice, and intonation techniques. This usually makes the problem worse.\n\nThe missing element is not another technique. The voice needs to become conversational again."
+        },
+        {
+          "heading": "Three common causes",
+          "body": "### 1. Performing every line\n\nEvery word is forceful, and every sentence ending rises or falls in the same way. It sounds like an advertisement, a character performance, or deliberately cute speech.\n\n### 2. Holding the voice in place\n\nTo maintain a high pitch or a particular timbre, the throat, tongue, and breathing remain tense. The sound may have the target pitch and still sound rigid.\n\n### 3. Distorted recording\n\nThe microphone may be too close, the input level too high, or the recording affected by background noise, reverb, or noise reduction."
+        },
+        {
+          "heading": "Practice",
+          "body": "### 1. Give the sentence a listener\n\nRead a passage:\n\n> I’m free tomorrow morning. Let’s go have dim sum.\n\nImagine the other person is standing in front of you.\n\n### 2. Relax fully\n\nProduce the lowest vocal fry you can, ideally with audible creaking. Gradually raise the pitch until you return to your normal speaking pitch.\n\n### 3. Keep recordings short\n\nRecord for 10 to 20 seconds each time. Long repetitions introduce fatigue, and later recordings become unsuitable for comparison."
+        },
+        {
+          "heading": "Do not use quiet voice as a substitute for natural voice",
+          "body": "A natural voice can be clear, supported, and at normal volume.\n\nDo not turn the voice into a whisper, breathy sound, or progressively smaller sound just to reduce effort."
+        },
+        {
+          "heading": "References",
+          "body": "1. American Speech-Language-Hearing Association. *Gender affirming voice and communication*. https://www.asha.org/practice-portal/professional-issues/gender-affirming-voice-and-communication/\n2. National Institute on Deafness and Other Communication Disorders. *Taking care of your voice*. https://www.nidcd.nih.gov/health/taking-care-your-voice"
+        }
+      ],
+      "rawContent": "# Low Naturalness: Return the Voice to Normal Speech\n\nLow naturalness means the recording does not sound like normal speech.\n\nThe voice may be too forceful, too artificial, or affected by poor recording conditions.\n\nLow naturalness does not mean the voice is damaged. It means the delivery has moved away from everyday speech.\n\n## Stop adding techniques\n\nWhen naturalness is low, many people respond by learning more bright voice, sweet voice, breathy voice, and intonation techniques. This usually makes the problem worse.\n\nThe missing element is not another technique. The voice needs to become conversational again.\n\n## Three common causes\n\n### 1. Performing every line\n\nEvery word is forceful, and every sentence ending rises or falls in the same way. It sounds like an advertisement, a character performance, or deliberately cute speech.\n\n### 2. Holding the voice in place\n\nTo maintain a high pitch or a particular timbre, the throat, tongue, and breathing remain tense. The sound may have the target pitch and still sound rigid.\n\n### 3. Distorted recording\n\nThe microphone may be too close, the input level too high, or the recording affected by background noise, reverb, or noise reduction.\n\n## Practice\n\n### 1. Give the sentence a listener\n\nRead a passage:\n\n> I’m free tomorrow morning. Let’s go have dim sum.\n\nImagine the other person is standing in front of you.\n\n### 2. Relax fully\n\nProduce the lowest vocal fry you can, ideally with audible creaking. Gradually raise the pitch until you return to your normal speaking pitch.\n\n### 3. Keep recordings short\n\nRecord for 10 to 20 seconds each time. Long repetitions introduce fatigue, and later recordings become unsuitable for comparison.\n\n## Do not use quiet voice as a substitute for natural voice\n\nA natural voice can be clear, supported, and at normal volume.\n\nDo not turn the voice into a whisper, breathy sound, or progressively smaller sound just to reduce effort.\n\n## References\n\n1. American Speech-Language-Hearing Association. *Gender affirming voice and communication*. https://www.asha.org/practice-portal/professional-issues/gender-affirming-voice-and-communication/\n2. National Institute on Deafness and Other Communication Disorders. *Taking care of your voice*. https://www.nidcd.nih.gov/health/taking-care-your-voice\n"
+    },
+    {
+      "id": "practice/03-low-f0",
+      "language": "en",
+      "title": "Pitch Too Low: Raise the Speaking Position Without Strain",
+      "category": "pitch",
+      "filename": "practice/en/03-low-f0.md",
+      "summary": "When average pitch is at or below 165 Hz, the feminization overall score is capped.",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "Pitch Too Low: Raise the Speaking Position Without Strain",
+          "body": "When average pitch is at or below 165 Hz, the feminization overall score is capped."
+        },
+        {
+          "heading": "Avoid these actions",
+          "body": "- Do not speak while holding the larynx high.\n- Do not press the larynx with your hand.\n- Do not force pitch upward by shouting.\n- Do not begin with falsetto.\n- Do not tense the neck and jaw to maintain a higher pitch.\n\nThese methods may raise pitch briefly and make the voice tight, artificial, and effortful."
+        },
+        {
+          "heading": "Eight-minute practice",
+          "body": "### 1. Record a baseline\n\nSpeak in your normal voice:\n\n> Sunk cost is time, money, or emotion that has already been spent and cannot be recovered.\n\nUse normal volume and a normal microphone distance.\n\n### 2. Release the mouth and tongue\n\nGently move the jaw, tongue, and lips. Breathe in naturally through the nose without filling the lungs completely.\n\n### 3. Make a small pitch glide\n\nUse a comfortable `m` or `ng` and glide gently between adjacent notes.\n\nKeep the range small. If the throat squeezes, pain appears, or the breath catches, reduce the range or stop.\n\n### 4. Find a position that supports a full sentence\n\nMove from the hum into:\n\n> Rationally speaking, whether to continue or stop should depend only on future benefits and costs.\n\nTry two or three slightly different starting pitches. Choose the version that can carry a full sentence comfortably, not the highest version.\n\n### 5. Preserve language tones\n\nDo not flatten every word into one pitch level. Languages naturally rise and fall. The goal is to change the overall speaking position, not fix every word at one pitch.\n\n### 6. Transfer to a daily sentence\n\nUse the new position for:\n\n> Are you here? I’m waiting at the entrance.\n\nThen answer one improvised question. The position is not learned until it survives a new sentence."
+        },
+        {
+          "heading": "What to check when listening back",
+          "body": "Check clarity and effort before pitch. If pitch rises but you cannot finish a sentence, become increasingly tired, or naturalness drops, do not keep this version.\n\nIf naturalness and timbre score are both good and the result remains at 59, pitch is still the main problem.\n\nIf the result is only 20, pitch is not the only problem. Naturalness also needs work. Restore normal speech before working on pitch."
+        },
+        {
+          "heading": "When to stop",
+          "body": "Stop immediately if you experience pain, burning, persistent hoarseness, frequent throat clearing, dizziness, or breathing discomfort."
+        },
+        {
+          "heading": "References",
+          "body": "1. Gelfer, M. P., & Bennett, Q. E. (2013). Speaking fundamental frequency and vowel formant frequencies: Effects on perception of gender. *Journal of Voice, 27*(5), 556–566. https://doi.org/10.1016/j.jvoice.2012.11.008\n2. Xu, Y. (1997). Contextual tonal variations in Mandarin. *Journal of Phonetics, 25*(1), 61–83. https://doi.org/10.1006/jpho.1996.0034\n3. American Speech-Language-Hearing Association. *Gender affirming voice and communication*. https://www.asha.org/practice-portal/professional-issues/gender-affirming-voice-and-communication/\n4. National Institute on Deafness and Other Communication Disorders. *Taking care of your voice*. https://www.nidcd.nih.gov/health/taking-care-your-voice"
+        }
+      ],
+      "rawContent": "# Pitch Too Low: Raise the Speaking Position Without Strain\n\nWhen average pitch is at or below 165 Hz, the feminization overall score is capped.\n\n## Avoid these actions\n\n- Do not speak while holding the larynx high.\n- Do not press the larynx with your hand.\n- Do not force pitch upward by shouting.\n- Do not begin with falsetto.\n- Do not tense the neck and jaw to maintain a higher pitch.\n\nThese methods may raise pitch briefly and make the voice tight, artificial, and effortful.\n\n## Eight-minute practice\n\n### 1. Record a baseline\n\nSpeak in your normal voice:\n\n> Sunk cost is time, money, or emotion that has already been spent and cannot be recovered.\n\nUse normal volume and a normal microphone distance.\n\n### 2. Release the mouth and tongue\n\nGently move the jaw, tongue, and lips. Breathe in naturally through the nose without filling the lungs completely.\n\n### 3. Make a small pitch glide\n\nUse a comfortable `m` or `ng` and glide gently between adjacent notes.\n\nKeep the range small. If the throat squeezes, pain appears, or the breath catches, reduce the range or stop.\n\n### 4. Find a position that supports a full sentence\n\nMove from the hum into:\n\n> Rationally speaking, whether to continue or stop should depend only on future benefits and costs.\n\nTry two or three slightly different starting pitches. Choose the version that can carry a full sentence comfortably, not the highest version.\n\n### 5. Preserve language tones\n\nDo not flatten every word into one pitch level. Languages naturally rise and fall. The goal is to change the overall speaking position, not fix every word at one pitch.\n\n### 6. Transfer to a daily sentence\n\nUse the new position for:\n\n> Are you here? I’m waiting at the entrance.\n\nThen answer one improvised question. The position is not learned until it survives a new sentence.\n\n## What to check when listening back\n\nCheck clarity and effort before pitch. If pitch rises but you cannot finish a sentence, become increasingly tired, or naturalness drops, do not keep this version.\n\nIf naturalness and timbre score are both good and the result remains at 59, pitch is still the main problem.\n\nIf the result is only 20, pitch is not the only problem. Naturalness also needs work. Restore normal speech before working on pitch.\n\n## When to stop\n\nStop immediately if you experience pain, burning, persistent hoarseness, frequent throat clearing, dizziness, or breathing discomfort.\n\n## References\n\n1. Gelfer, M. P., & Bennett, Q. E. (2013). Speaking fundamental frequency and vowel formant frequencies: Effects on perception of gender. *Journal of Voice, 27*(5), 556–566. https://doi.org/10.1016/j.jvoice.2012.11.008\n2. Xu, Y. (1997). Contextual tonal variations in Mandarin. *Journal of Phonetics, 25*(1), 61–83. https://doi.org/10.1006/jpho.1996.0034\n3. American Speech-Language-Hearing Association. *Gender affirming voice and communication*. https://www.asha.org/practice-portal/professional-issues/gender-affirming-voice-and-communication/\n4. National Institute on Deafness and Other Communication Disorders. *Taking care of your voice*. https://www.nidcd.nih.gov/health/taking-care-your-voice\n"
+    },
+    {
+      "id": "practice/01-vfp",
+      "language": "zh_cn",
+      "title": "音色分低：别硬夹",
+      "category": "timbre",
+      "filename": "practice/zh_cn/01-vfp.md",
+      "summary": "音色分低，说明这段录音整体听起来还不够女性化。",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "音色分低：别硬夹",
+          "body": "音色分低，说明这段录音整体听起来还不够女性化。\n\n它说明当前的共鸣、语调没有让系统听到足够的女性化特征。\n\n音高可以很高，音色分仍然低。你可以在 200 Hz 上说话，但声音依旧厚、闷、压，或者明显像刻意装出来的。"
+        },
+        {
+          "heading": "最容易走错的路",
+          "body": "### 只推音高\n\n音高只是音色的一部分。音高上去但音色厚、闷、假，音色分不会因此变好。\n\n### 一直夹\n\n夹着说短句可能让声音立刻变亮，但很容易越说越紧，自然度也跟着掉。\n\n### 一直用气声\n\n气声不等于女性化。大量漏气会让声音变虚，还可能让音高检测失效。"
+        },
+        {
+          "heading": "怎么练",
+          "body": "### 1. 先录原版\n\n用平常声音说：\n\n> 阿德勒心理学把人际关系中的问题分成“我的课题”和“他人的课题”。\n\n不要刻意压低，也不要一开口就夹高。留作原版。\n\n### 2. 放松口舌\n\n轻轻活动下颌、舌头和嘴唇。用舒服的音量哼 `hum`，再过渡到 `ma`、`me`。\n\n只要声音能顺利出来就够了。出现疼痛、挤喉或明显费力，停。\n\n### 3. 让字音更集中\n\n说回原句，但把字说清楚，不要把声音闷在口腔后面。\n\n不要同时推高音高、加大音量、改成气声，一次只改一个变量。\n\n### 4. 换句子验证\n\n> 斯多葛哲学把事物分成两类：能够由自己控制的，和不能由自己控制的。\n\n如果只有示范句有效，换句就散，说明还没掌握。"
+        },
+        {
+          "heading": "日常怎么练",
+          "body": "每天练 10–15 分钟。用三种材料轮换：\n\n1. 一句准备好的话。\n2. 一段 20 秒朗读。\n3. 一个即兴回答。\n\n然后在 Pitchee上录一段不小于 5秒钟的录音，查看音色分的变化。音色分模型是基于连续语音（Speech）训练的，请正常说话，不要录元音。"
+        },
+        {
+          "heading": "什么时候停",
+          "body": "疼痛、持续嘶哑、明显费力、说话后声音长期恢复不过来，先停止练习。"
+        },
+        {
+          "heading": "参考资料",
+          "body": "1. Doukhan, D. et al. (2023). *Voice Passing: a Non-Binary Voice Gender Prediction System for evaluating Transgender voice transition*. Interspeech 2023. https://doi.org/10.21437/Interspeech.2023-1835\n2. American Speech-Language-Hearing Association. *Gender affirming voice and communication*. https://www.asha.org/practice-portal/professional-issues/gender-affirming-voice-and-communication/\n3. National Institute on Deafness and Other Communication Disorders. *Taking care of your voice*. https://www.nidcd.nih.gov/health/taking-care-your-voice"
+        }
+      ],
+      "rawContent": "# 音色分低：别硬夹\n\n音色分低，说明这段录音整体听起来还不够女性化。\n\n它说明当前的共鸣、语调没有让系统听到足够的女性化特征。\n\n音高可以很高，音色分仍然低。你可以在 200 Hz 上说话，但声音依旧厚、闷、压，或者明显像刻意装出来的。\n\n## 最容易走错的路\n\n### 只推音高\n\n音高只是音色的一部分。音高上去但音色厚、闷、假，音色分不会因此变好。\n\n### 一直夹\n\n夹着说短句可能让声音立刻变亮，但很容易越说越紧，自然度也跟着掉。\n\n### 一直用气声\n\n气声不等于女性化。大量漏气会让声音变虚，还可能让音高检测失效。\n\n## 怎么练\n\n### 1. 先录原版\n\n用平常声音说：\n\n> 阿德勒心理学把人际关系中的问题分成“我的课题”和“他人的课题”。\n\n不要刻意压低，也不要一开口就夹高。留作原版。\n\n### 2. 放松口舌\n\n轻轻活动下颌、舌头和嘴唇。用舒服的音量哼 `hum`，再过渡到 `ma`、`me`。\n\n只要声音能顺利出来就够了。出现疼痛、挤喉或明显费力，停。\n\n### 3. 让字音更集中\n\n说回原句，但把字说清楚，不要把声音闷在口腔后面。\n\n不要同时推高音高、加大音量、改成气声，一次只改一个变量。\n\n### 4. 换句子验证\n\n> 斯多葛哲学把事物分成两类：能够由自己控制的，和不能由自己控制的。\n\n如果只有示范句有效，换句就散，说明还没掌握。\n\n## 日常怎么练\n\n每天练 10–15 分钟。用三种材料轮换：\n\n1. 一句准备好的话。\n2. 一段 20 秒朗读。\n3. 一个即兴回答。\n\n然后在 Pitchee上录一段不小于 5秒钟的录音，查看音色分的变化。音色分模型是基于连续语音（Speech）训练的，请正常说话，不要录元音。\n\n## 什么时候停\n\n疼痛、持续嘶哑、明显费力、说话后声音长期恢复不过来，先停止练习。\n\n## 参考资料\n\n1. Doukhan, D. et al. (2023). *Voice Passing: a Non-Binary Voice Gender Prediction System for evaluating Transgender voice transition*. Interspeech 2023. https://doi.org/10.21437/Interspeech.2023-1835\n2. American Speech-Language-Hearing Association. *Gender affirming voice and communication*. https://www.asha.org/practice-portal/professional-issues/gender-affirming-voice-and-communication/\n3. National Institute on Deafness and Other Communication Disorders. *Taking care of your voice*. https://www.nidcd.nih.gov/health/taking-care-your-voice\n"
+    },
+    {
+      "id": "practice/02-naturalness",
+      "language": "zh_cn",
+      "title": "自然度低：先把声音说回人话",
+      "category": "naturalness",
+      "filename": "practice/zh_cn/02-naturalness.md",
+      "summary": "自然度低的解释是：这段录音听起来不像正常说话。",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine",
+        "masculine",
+        "undecided"
+      ],
+      "sections": [
+        {
+          "heading": "自然度低：先把声音说回人话",
+          "body": "自然度低的解释是：这段录音听起来不像正常说话。\n\n可能太用力，可能太假，也可能只是录音条件太差。\n\n自然度低不等于嗓子坏了，它说明声音的表达方式偏离了日常说话。"
+        },
+        {
+          "heading": "先别继续加技巧",
+          "body": "很多人在自然度低时，会继续学新的亮音、甜音、气声和语调技巧。这通常会把问题弄得更重。\n\n你现在缺的不是技巧数量，是让声音重新变自然。"
+        },
+        {
+          "heading": "最常见的三个原因",
+          "body": "### 1. 一直在演\n\n每个字都很用力，句尾固定上扬或下压，听起来像念广告、演角色或刻意装可爱。\n\n### 2. 一直在撑\n\n为了保持高音或某种音色，喉咙、舌头和呼吸一直绷着，听起来十分僵硬。\n\n### 3. 录音本身失真\n\n麦克风太近、电平过高、背景噪声、混响导致或开启了降噪。"
+        },
+        {
+          "heading": "怎么练",
+          "body": "### 1. 给一句话找对象\n\n读一段话，例如：\n\n> 我明天上午有空，来饮杯早茶吧。\n\n想象对方就在面前。\n\n### 2. 彻底放松\n\n发出你可以发出的最低的气泡音，最好是可以听到颗粒声那种。然后逐步提升音高，直到恢复你的正常说话音高。\n\n### 3. 录短一点\n\n每次录 10–20 秒。连续重复太久，后面几版会被疲劳影响。"
+        },
+        {
+          "heading": "不要用“小声”冒充自然",
+          "body": "自然的声音可以清楚、有支撑，也可以有正常音量。\n\n不要为了减少用力，把声音变成耳语、气声或越来越小。"
+        },
+        {
+          "heading": "参考资料",
+          "body": "1. American Speech-Language-Hearing Association. *Gender affirming voice and communication*. https://www.asha.org/practice-portal/professional-issues/gender-affirming-voice-and-communication/\n2. National Institute on Deafness and Other Communication Disorders. *Taking care of your voice*. https://www.nidcd.nih.gov/health/taking-care-your-voice"
+        }
+      ],
+      "rawContent": "# 自然度低：先把声音说回人话\n\n自然度低的解释是：这段录音听起来不像正常说话。\n\n可能太用力，可能太假，也可能只是录音条件太差。\n\n自然度低不等于嗓子坏了，它说明声音的表达方式偏离了日常说话。\n\n## 先别继续加技巧\n\n很多人在自然度低时，会继续学新的亮音、甜音、气声和语调技巧。这通常会把问题弄得更重。\n\n你现在缺的不是技巧数量，是让声音重新变自然。\n\n## 最常见的三个原因\n\n### 1. 一直在演\n\n每个字都很用力，句尾固定上扬或下压，听起来像念广告、演角色或刻意装可爱。\n\n### 2. 一直在撑\n\n为了保持高音或某种音色，喉咙、舌头和呼吸一直绷着，听起来十分僵硬。\n\n### 3. 录音本身失真\n\n麦克风太近、电平过高、背景噪声、混响导致或开启了降噪。\n\n## 怎么练\n\n### 1. 给一句话找对象\n\n读一段话，例如：\n\n> 我明天上午有空，来饮杯早茶吧。\n\n想象对方就在面前。\n\n### 2. 彻底放松\n\n发出你可以发出的最低的气泡音，最好是可以听到颗粒声那种。然后逐步提升音高，直到恢复你的正常说话音高。\n\n### 3. 录短一点\n\n每次录 10–20 秒。连续重复太久，后面几版会被疲劳影响。\n\n## 不要用“小声”冒充自然\n\n自然的声音可以清楚、有支撑，也可以有正常音量。\n\n不要为了减少用力，把声音变成耳语、气声或越来越小。\n\n## 参考资料\n\n1. American Speech-Language-Hearing Association. *Gender affirming voice and communication*. https://www.asha.org/practice-portal/professional-issues/gender-affirming-voice-and-communication/\n2. National Institute on Deafness and Other Communication Disorders. *Taking care of your voice*. https://www.nidcd.nih.gov/health/taking-care-your-voice\n"
+    },
+    {
+      "id": "practice/03-low-f0",
+      "language": "zh_cn",
+      "title": "音高偏低：练省力地抬高一点",
+      "category": "pitch",
+      "filename": "practice/zh_cn/03-low-f0.md",
+      "summary": "平均音高不高于 165 Hz，女性化综合分会被限制。",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "音高偏低：练省力地抬高一点",
+          "body": "平均音高不高于 165 Hz，女性化综合分会被限制。"
+        },
+        {
+          "heading": "不要做的事",
+          "body": "- 不要抬着喉结说话。\n- 不要用手压喉头。\n- 不要靠喊把音高顶上去。\n- 不要一开始就学假声。\n- 不要为了维持高音把脖子和下巴绷住。\n\n这些方法可能让声音短时间变高，也很容易变得紧、假、费力。"
+        },
+        {
+          "heading": "8 分钟练习",
+          "body": "### 1. 录原版\n\n用平常声音说：\n\n> 沉没成本是已经付出、无法收回的时间、金钱或感情。\n\n保持正常音量和正常麦克风距离。\n\n### 2. 活动口舌\n\n轻轻活动下颌、舌头和嘴唇。用鼻子自然吸气，不需要把气吸满。\n\n### 3. 做小范围滑音\n\n用舒服的 `m` 或 `ng`，在相邻几个音之间轻轻上下滑。\n\n范围不要太大。出现挤喉、疼痛或气息卡住，就缩小范围或停止。\n\n### 4. 找到能说完整句的位置\n\n从哼鸣过渡到：\n\n> 理性地说，继续还是停止，只应取决于未来的收益与代价。\n\n试两三个稍有不同的起始音高。选能轻松说完整句的那版，不要选最高的那版。\n\n### 5. 保住普通话声调\n\n不要把所有字说成一条平线。语言本来就有升降。你要改的是整体说话位置，不是把每个字固定住。\n\n### 6. 换日常句子\n\n再用新位置说：\n\n> 你到了吗？我在门口等你。\n\n然后即兴回答一句。只有换句还能用，才算真的掌握。"
+        },
+        {
+          "heading": "回听时看什么",
+          "body": "音高上去了，但说不出完整句、越来越累、自然度下降，就不要保留这一版。\n\n如果自然度和音色分都不错，结果却卡在 59，那么音高还是主要问题。\n\n如果结果只有 20，说明不只是音高，自然度也有问题。先会说正常话，再谈抬高。"
+        },
+        {
+          "heading": "什么时候停",
+          "body": "出现疼痛、灼热、持续嘶哑、不断清嗓、头晕或呼吸不适，立刻停止。"
+        },
+        {
+          "heading": "参考资料",
+          "body": "1. Gelfer, M. P., & Bennett, Q. E. (2013). Speaking fundamental frequency and vowel formant frequencies: Effects on perception of gender. *Journal of Voice, 27*(5), 556–566. https://doi.org/10.1016/j.jvoice.2012.11.008\n2. Xu, Y. (1997). Contextual tonal variations in Mandarin. *Journal of Phonetics, 25*(1), 61–83. https://doi.org/10.1006/jpho.1996.0034\n3. American Speech-Language-Hearing Association. *Gender affirming voice and communication*. https://www.asha.org/practice-portal/professional-issues/gender-affirming-voice-and-communication/\n4. National Institute on Deafness and Other Communication Disorders. *Taking care of your voice*. https://www.nidcd.nih.gov/health/taking-care-your-voice"
+        }
+      ],
+      "rawContent": "# 音高偏低：练省力地抬高一点\n\n平均音高不高于 165 Hz，女性化综合分会被限制。\n\n## 不要做的事\n\n- 不要抬着喉结说话。\n- 不要用手压喉头。\n- 不要靠喊把音高顶上去。\n- 不要一开始就学假声。\n- 不要为了维持高音把脖子和下巴绷住。\n\n这些方法可能让声音短时间变高，也很容易变得紧、假、费力。\n\n## 8 分钟练习\n\n### 1. 录原版\n\n用平常声音说：\n\n> 沉没成本是已经付出、无法收回的时间、金钱或感情。\n\n保持正常音量和正常麦克风距离。\n\n### 2. 活动口舌\n\n轻轻活动下颌、舌头和嘴唇。用鼻子自然吸气，不需要把气吸满。\n\n### 3. 做小范围滑音\n\n用舒服的 `m` 或 `ng`，在相邻几个音之间轻轻上下滑。\n\n范围不要太大。出现挤喉、疼痛或气息卡住，就缩小范围或停止。\n\n### 4. 找到能说完整句的位置\n\n从哼鸣过渡到：\n\n> 理性地说，继续还是停止，只应取决于未来的收益与代价。\n\n试两三个稍有不同的起始音高。选能轻松说完整句的那版，不要选最高的那版。\n\n### 5. 保住普通话声调\n\n不要把所有字说成一条平线。语言本来就有升降。你要改的是整体说话位置，不是把每个字固定住。\n\n### 6. 换日常句子\n\n再用新位置说：\n\n> 你到了吗？我在门口等你。\n\n然后即兴回答一句。只有换句还能用，才算真的掌握。\n\n## 回听时看什么\n\n音高上去了，但说不出完整句、越来越累、自然度下降，就不要保留这一版。\n\n如果自然度和音色分都不错，结果却卡在 59，那么音高还是主要问题。\n\n如果结果只有 20，说明不只是音高，自然度也有问题。先会说正常话，再谈抬高。\n\n## 什么时候停\n\n出现疼痛、灼热、持续嘶哑、不断清嗓、头晕或呼吸不适，立刻停止。\n\n## 参考资料\n\n1. Gelfer, M. P., & Bennett, Q. E. (2013). Speaking fundamental frequency and vowel formant frequencies: Effects on perception of gender. *Journal of Voice, 27*(5), 556–566. https://doi.org/10.1016/j.jvoice.2012.11.008\n2. Xu, Y. (1997). Contextual tonal variations in Mandarin. *Journal of Phonetics, 25*(1), 61–83. https://doi.org/10.1006/jpho.1996.0034\n3. American Speech-Language-Hearing Association. *Gender affirming voice and communication*. https://www.asha.org/practice-portal/professional-issues/gender-affirming-voice-and-communication/\n4. National Institute on Deafness and Other Communication Disorders. *Taking care of your voice*. https://www.nidcd.nih.gov/health/taking-care-your-voice\n"
+    },
+    {
+      "id": "rules/01-feminization-continuous-nopass",
+      "language": "en",
+      "title": "Average Pitch, Naturalness, and Timbre All Pass, but the Overall Result Does Not",
+      "category": "rules",
+      "filename": "rules/en/01-feminization-continuous-nopass.md",
+      "summary": "This result means average pitch, naturalness, and timbre score have each crossed their individual pass lines, and no score cap was triggered.",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "Average Pitch, Naturalness, and Timbre All Pass, but the Overall Result Does Not",
+          "body": "This result means average pitch, naturalness, and timbre score have each crossed their individual pass lines, and no score cap was triggered."
+        },
+        {
+          "heading": "Score explanation",
+          "body": "Average pitch is above 165 Hz, so the pitch category passes.\n\nNaturalness is at least 50, so the normal-speech category passes.\n\nTimbre score is at least 50, so the feminine-timbre category passes.\n\nOne or more of these three scores remains low enough that the overall result is still below 60."
+        },
+        {
+          "heading": "Next step",
+          "body": "The next goal is to reach 60 by improving the weaker of timbre score and naturalness.\n\nRelated reading: [Low timbre score](../../practice/en/01-vfp.md), [Low naturalness](../../practice/en/02-naturalness.md)."
+        }
+      ],
+      "rawContent": "# Average Pitch, Naturalness, and Timbre All Pass, but the Overall Result Does Not\n\nThis result means average pitch, naturalness, and timbre score have each crossed their individual pass lines, and no score cap was triggered.\n\n## Score explanation\n\nAverage pitch is above 165 Hz, so the pitch category passes.\n\nNaturalness is at least 50, so the normal-speech category passes.\n\nTimbre score is at least 50, so the feminine-timbre category passes.\n\nOne or more of these three scores remains low enough that the overall result is still below 60.\n\n## Next step\n\nThe next goal is to reach 60 by improving the weaker of timbre score and naturalness.\n\nRelated reading: [Low timbre score](../../practice/en/01-vfp.md), [Low naturalness](../../practice/en/02-naturalness.md).\n"
+    },
+    {
+      "id": "rules/02-feminization-continuous-pass",
+      "language": "en",
+      "title": "Initial Pass at 60",
+      "category": "rules",
+      "filename": "rules/en/02-feminization-continuous-pass.md",
+      "summary": "You have reached the initial pass line for voice feminization.",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "Initial Pass at 60",
+          "body": "You have reached the initial pass line for voice feminization.\n\nBut gal, you can do better than that."
+        },
+        {
+          "heading": "Score explanation",
+          "body": "Average pitch is above 165 Hz, so the pitch category passes.\n\nNaturalness is at least 50, so the normal-speech category passes.\n\nTimbre score is at least 50, so the feminine-timbre category passes."
+        },
+        {
+          "heading": "Next step",
+          "body": "The next goal is the bonus range:\n\nKeep average pitch above 165 Hz.\n\nRaise naturalness above 80.\n\nRaise timbre score above 50.\n\nThe bonus is limited by the weakest of the three scores. A high pitch alone cannot carry the overall result, so the current focus should be naturalness and timbre score.\n\nRelated reading: [Low timbre score](../../practice/en/01-vfp.md), [Low naturalness](../../practice/en/02-naturalness.md)."
+        }
+      ],
+      "rawContent": "# Initial Pass at 60\n\nYou have reached the initial pass line for voice feminization.\n\nBut gal, you can do better than that.\n\n## Score explanation\n\nAverage pitch is above 165 Hz, so the pitch category passes.\n\nNaturalness is at least 50, so the normal-speech category passes.\n\nTimbre score is at least 50, so the feminine-timbre category passes.\n\n## Next step\n\nThe next goal is the bonus range:\n\nKeep average pitch above 165 Hz.\n\nRaise naturalness above 80.\n\nRaise timbre score above 50.\n\nThe bonus is limited by the weakest of the three scores. A high pitch alone cannot carry the overall result, so the current focus should be naturalness and timbre score.\n\nRelated reading: [Low timbre score](../../practice/en/01-vfp.md), [Low naturalness](../../practice/en/02-naturalness.md).\n"
+    },
+    {
+      "id": "rules/03-pass-boost",
+      "language": "en",
+      "title": "Entering the Bonus Range: “Pass!”",
+      "category": "rules",
+      "filename": "rules/en/03-pass-boost.md",
+      "summary": "Entering the bonus range means the voice has passed this assessment.",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "Entering the Bonus Range: “Pass!”",
+          "body": "Entering the bonus range means the voice has passed this assessment.\n\nAverage pitch is above 165 Hz.\n\nNaturalness is above 80.\n\nTimbre score is above 50.\n\nAll three must pass at the same time for this result."
+        },
+        {
+          "heading": "Next step",
+          "body": "The next task is to keep the result stable. Put another way, you can show off your voice now. Isn’t that a good thing?"
+        }
+      ],
+      "rawContent": "# Entering the Bonus Range: “Pass!”\n\nEntering the bonus range means the voice has passed this assessment.\n\nAverage pitch is above 165 Hz.\n\nNaturalness is above 80.\n\nTimbre score is above 50.\n\nAll three must pass at the same time for this result.\n\n## Next step\n\nThe next task is to keep the result stable. Put another way, you can show off your voice now. Isn’t that a good thing?\n"
+    },
+    {
+      "id": "rules/04-high-f0-stylized-cap",
+      "language": "en",
+      "title": "High Pitch and Low Naturalness: “Eunuch Voice”",
+      "category": "rules",
+      "filename": "rules/en/04-high-f0-stylized-cap.md",
+      "summary": "Average pitch is above 165 Hz.",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "High Pitch and Low Naturalness: “Eunuch Voice”",
+          "body": "Average pitch is above 165 Hz.\n\nNaturalness is below 50.\n\nThe feminization overall score is capped at 30.\n\nThis score corresponds to the perception users describe as a “eunuch voice”: the pitch is high, but the voice does not sound like normal speech."
+        },
+        {
+          "heading": "Score explanation",
+          "body": "The pitch category passes.\n\nThe naturalness category does not.\n\nThe voice is both high and clearly removed from everyday speech, which tends to sound sharp, fake, squeezed, or suspended. The system therefore groups it as high pitch with low naturalness, does not treat it as feminine, and caps the result at 30.\n\nThe current timbre score is trained mainly on typical male and female voices and does not cover the “eunuch voice” combination. It is therefore not a valid basis for judging this branch of the rules. A high timbre score does not prove that this vocal approach is working."
+        },
+        {
+          "heading": "What to improve",
+          "body": "Pitch is already high enough. The main weakness is naturalness. Pushing from 180 Hz to 200 Hz will not turn a eunuch voice into a normal female voice. It will only make the voice tighter and less natural. Restore normal connected speech first, then work on timbre and the bonus.\n\nRelated reading: [Low naturalness](../../practice/en/02-naturalness.md)."
+        }
+      ],
+      "rawContent": "# High Pitch and Low Naturalness: “Eunuch Voice”\n\nAverage pitch is above 165 Hz.\n\nNaturalness is below 50.\n\nThe feminization overall score is capped at 30.\n\nThis score corresponds to the perception users describe as a “eunuch voice”: the pitch is high, but the voice does not sound like normal speech.\n\n## Score explanation\n\nThe pitch category passes.\n\nThe naturalness category does not.\n\nThe voice is both high and clearly removed from everyday speech, which tends to sound sharp, fake, squeezed, or suspended. The system therefore groups it as high pitch with low naturalness, does not treat it as feminine, and caps the result at 30.\n\nThe current timbre score is trained mainly on typical male and female voices and does not cover the “eunuch voice” combination. It is therefore not a valid basis for judging this branch of the rules. A high timbre score does not prove that this vocal approach is working.\n\n## What to improve\n\nPitch is already high enough. The main weakness is naturalness. Pushing from 180 Hz to 200 Hz will not turn a eunuch voice into a normal female voice. It will only make the voice tighter and less natural. Restore normal connected speech first, then work on timbre and the bonus.\n\nRelated reading: [Low naturalness](../../practice/en/02-naturalness.md).\n"
+    },
+    {
+      "id": "rules/05-low-f0-natural-cap",
+      "language": "en",
+      "title": "Natural Voice and Pitch Too Low: “Cis Male Voice”",
+      "category": "rules",
+      "filename": "rules/en/05-low-f0-natural-cap.md",
+      "summary": "Naturalness is at least 50.",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "Natural Voice and Pitch Too Low: “Cis Male Voice”",
+          "body": "Naturalness is at least 50.\n\nAverage pitch is at or below 165 Hz.\n\nThe feminization overall score is capped at 59.\n\nThis result corresponds to a natural, stable male voice with low pitch, described here as a “cis male voice.”"
+        },
+        {
+          "heading": "Score explanation",
+          "body": "Naturalness has passed, which means the voice sounds close to normal speech.\n\nPitch has not crossed 165 Hz, so the feminine pitch category does not pass.\n\nNo matter how high the timbre score is, it cannot make up for pitch on its own. The overall score is therefore capped at 59."
+        },
+        {
+          "heading": "Next step",
+          "body": "If the goal is still to raise the feminization overall score, move directly to pitch training.\n\nRelated reading: [Pitch too low](../../practice/en/03-low-f0.md)."
+        }
+      ],
+      "rawContent": "# Natural Voice and Pitch Too Low: “Cis Male Voice”\n\nNaturalness is at least 50.\n\nAverage pitch is at or below 165 Hz.\n\nThe feminization overall score is capped at 59.\n\nThis result corresponds to a natural, stable male voice with low pitch, described here as a “cis male voice.”\n\n## Score explanation\n\nNaturalness has passed, which means the voice sounds close to normal speech.\n\nPitch has not crossed 165 Hz, so the feminine pitch category does not pass.\n\nNo matter how high the timbre score is, it cannot make up for pitch on its own. The overall score is therefore capped at 59.\n\n## Next step\n\nIf the goal is still to raise the feminization overall score, move directly to pitch training.\n\nRelated reading: [Pitch too low](../../practice/en/03-low-f0.md).\n"
+    },
+    {
+      "id": "rules/06-low-f0-stylized-cap",
+      "language": "en",
+      "title": "Low Pitch and Unnatural: “Withdrawn and Low”",
+      "category": "rules",
+      "filename": "rules/en/06-low-f0-stylized-cap.md",
+      "summary": "Average pitch is at or below 165 Hz.",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "Low Pitch and Unnatural: “Withdrawn and Low”",
+          "body": "Average pitch is at or below 165 Hz.\n\nNaturalness is below 50.\n\nThe feminization overall score is capped at 20.\n\nThis voice is low, tight, and held back. The corresponding perception is “withdrawn and low.”"
+        },
+        {
+          "heading": "Score explanation",
+          "body": "The pitch category fails.\n\nThe naturalness category fails.\n\nNo matter how high the timbre score is, it cannot offset low pitch and low naturalness. The final score is capped at 20.\n\nWhen a voice stays pressed into a low position, it sounds withdrawn. When it also departs from everyday speech, it may sound tight, muffled, weak, or trapped in the same position from sentence to sentence. When pitch and natural expression both move away from the target, the voice sounds withdrawn."
+        },
+        {
+          "heading": "What to improve",
+          "body": "Work on naturalness first. The voice should produce full sentences in a normal, connected way without pressing down or clamping at the start. After naturalness is stable, work on pitch separately. Changing both at once makes it easy to replace one unnatural pattern with another.\n\nRelated reading: [Low naturalness](../../practice/en/02-naturalness.md), [Pitch too low](../../practice/en/03-low-f0.md)."
+        }
+      ],
+      "rawContent": "# Low Pitch and Unnatural: “Withdrawn and Low”\n\nAverage pitch is at or below 165 Hz.\n\nNaturalness is below 50.\n\nThe feminization overall score is capped at 20.\n\nThis voice is low, tight, and held back. The corresponding perception is “withdrawn and low.”\n\n## Score explanation\n\nThe pitch category fails.\n\nThe naturalness category fails.\n\nNo matter how high the timbre score is, it cannot offset low pitch and low naturalness. The final score is capped at 20.\n\nWhen a voice stays pressed into a low position, it sounds withdrawn. When it also departs from everyday speech, it may sound tight, muffled, weak, or trapped in the same position from sentence to sentence. When pitch and natural expression both move away from the target, the voice sounds withdrawn.\n\n## What to improve\n\nWork on naturalness first. The voice should produce full sentences in a normal, connected way without pressing down or clamping at the start. After naturalness is stable, work on pitch separately. Changing both at once makes it easy to replace one unnatural pattern with another.\n\nRelated reading: [Low naturalness](../../practice/en/02-naturalness.md), [Pitch too low](../../practice/en/03-low-f0.md).\n"
+    },
+    {
+      "id": "rules/07-high-f0-male-cap",
+      "language": "en",
+      "title": "High Pitch and Low Timbre Score: A “Bright and Thin” Male Voice",
+      "category": "rules",
+      "filename": "rules/en/07-high-f0-male-cap.md",
+      "summary": "Average pitch is above 165 Hz.",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "High Pitch and Low Timbre Score: A “Bright and Thin” Male Voice",
+          "body": "Average pitch is above 165 Hz.\n\nNaturalness is at least 50.\n\nTimbre score is below 50."
+        },
+        {
+          "heading": "Score explanation",
+          "body": "The pitch category passes.\n\nThe normal-speech category passes.\n\nThe feminine timbre category does not pass.\n\nThe voice has become higher, but the overall timbre is not feminine. The high pitch remains, and the male voice remains as well. The overall score is therefore capped at 59.\n\nThe main problem is timbre, not pitch. Pushing pitch higher will not turn a bright, thin male voice into a female voice, and it may add vocal strain."
+        },
+        {
+          "heading": "What to improve",
+          "body": "Raise the timbre score first, then reassess naturalness.\n\nRelated reading: [Low timbre score](../../practice/en/01-vfp.md)."
+        }
+      ],
+      "rawContent": "# High Pitch and Low Timbre Score: A “Bright and Thin” Male Voice\n\nAverage pitch is above 165 Hz.\n\nNaturalness is at least 50.\n\nTimbre score is below 50.\n\n## Score explanation\n\nThe pitch category passes.\n\nThe normal-speech category passes.\n\nThe feminine timbre category does not pass.\n\nThe voice has become higher, but the overall timbre is not feminine. The high pitch remains, and the male voice remains as well. The overall score is therefore capped at 59.\n\nThe main problem is timbre, not pitch. Pushing pitch higher will not turn a bright, thin male voice into a female voice, and it may add vocal strain.\n\n## What to improve\n\nRaise the timbre score first, then reassess naturalness.\n\nRelated reading: [Low timbre score](../../practice/en/01-vfp.md).\n"
+    },
+    {
+      "id": "rules/01-feminization-continuous-nopass",
+      "language": "zh_cn",
+      "title": "平均音高/自然度/音色均及格，但仍然未及格",
+      "category": "rules",
+      "filename": "rules/zh_cn/01-feminization-continuous-nopass.md",
+      "summary": "这组结果说明音高、自然度、音色分都越过了各自的及格线，没有触发分数限制。",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "平均音高/自然度/音色均及格，但仍然未及格",
+          "body": "这组结果说明音高、自然度、音色分都越过了各自的及格线，没有触发分数限制。"
+        },
+        {
+          "heading": "分数解释",
+          "body": "平均音高高于 165 Hz，音高项及格。\n\n自然度达到 50，正常说话项及格。\n\n音色分达到 50，女性化音色项及格。\n\n但其中某一项或几项偏低，导致综合分没有到达60分。"
+        },
+        {
+          "heading": "下一步",
+          "body": "后续目标为进入 60分，提高音色/自然度中的弱项。\n\n相关阅读：[音色分低怎么练](../../practice/zh_cn/01-vfp.md)、[自然度低怎么练](../../practice/zh_cn/02-naturalness.md)。"
+        }
+      ],
+      "rawContent": "# 平均音高/自然度/音色均及格，但仍然未及格\n\n这组结果说明音高、自然度、音色分都越过了各自的及格线，没有触发分数限制。\n\n## 分数解释\n\n平均音高高于 165 Hz，音高项及格。\n\n自然度达到 50，正常说话项及格。\n\n音色分达到 50，女性化音色项及格。\n\n但其中某一项或几项偏低，导致综合分没有到达60分。\n\n## 下一步\n\n后续目标为进入 60分，提高音色/自然度中的弱项。\n\n相关阅读：[音色分低怎么练](../../practice/zh_cn/01-vfp.md)、[自然度低怎么练](../../practice/zh_cn/02-naturalness.md)。\n"
+    },
+    {
+      "id": "rules/02-feminization-continuous-pass",
+      "language": "zh_cn",
+      "title": "初步达到及格 60分",
+      "category": "rules",
+      "filename": "rules/zh_cn/02-feminization-continuous-pass.md",
+      "summary": "恭喜你，初步达到了声音女性化的及格线！",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "初步达到及格 60分",
+          "body": "恭喜你，初步达到了声音女性化的及格线！\n\nBut gal, you can do better than that."
+        },
+        {
+          "heading": "分数解释",
+          "body": "平均音高高于 165 Hz，音高项及格。\n\n自然度达到 50，正常说话项及格。\n\n音色分达到 50，女性化音色项及格。"
+        },
+        {
+          "heading": "下一步",
+          "body": "后续目标为进入“加分”规则：\n\n平均音高保持高于 165 Hz。\n\n自然度提高到 80 以上。\n\n音色分提高到 50 以上。\n\n加分取决于三项中最弱的一项，单靠音高特别高无法带动整体，因此现阶段应重点提高自然度和音色分。\n\n相关阅读：[音色分低怎么练](../../practice/zh_cn/01-vfp.md)、[自然度低怎么练](../../practice/zh_cn/02-naturalness.md)。"
+        }
+      ],
+      "rawContent": "# 初步达到及格 60分\n\n恭喜你，初步达到了声音女性化的及格线！\n\nBut gal, you can do better than that.\n\n## 分数解释\n\n平均音高高于 165 Hz，音高项及格。\n\n自然度达到 50，正常说话项及格。\n\n音色分达到 50，女性化音色项及格。\n\n## 下一步\n\n后续目标为进入“加分”规则：\n\n平均音高保持高于 165 Hz。\n\n自然度提高到 80 以上。\n\n音色分提高到 50 以上。\n\n加分取决于三项中最弱的一项，单靠音高特别高无法带动整体，因此现阶段应重点提高自然度和音色分。\n\n相关阅读：[音色分低怎么练](../../practice/zh_cn/01-vfp.md)、[自然度低怎么练](../../practice/zh_cn/02-naturalness.md)。\n"
+    },
+    {
+      "id": "rules/03-pass-boost",
+      "language": "zh_cn",
+      "title": "进入加分区间：“Pass！”",
+      "category": "rules",
+      "filename": "rules/zh_cn/03-pass-boost.md",
+      "summary": "进入加分区间，表示本次声音已经 Pass。",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "进入加分区间：“Pass！”",
+          "body": "进入加分区间，表示本次声音已经 Pass。\n\n平均音高高于 165 Hz。\n\n自然度高于 80。\n\n音色分高于 50。\n\n三项同时达标才有这一结果。"
+        },
+        {
+          "heading": "后续方向",
+          "body": "下一阶段的任务是保持稳定。或者说，你可以和别人炫耀你的声音了。这不是好事吗？"
+        }
+      ],
+      "rawContent": "# 进入加分区间：“Pass！”\n\n进入加分区间，表示本次声音已经 Pass。\n\n平均音高高于 165 Hz。\n\n自然度高于 80。\n\n音色分高于 50。\n\n三项同时达标才有这一结果。\n\n## 后续方向\n\n下一阶段的任务是保持稳定。或者说，你可以和别人炫耀你的声音了。这不是好事吗？\n"
+    },
+    {
+      "id": "rules/04-high-f0-stylized-cap",
+      "language": "zh_cn",
+      "title": "音高够高、自然度低：“太监音”",
+      "category": "rules",
+      "filename": "rules/zh_cn/04-high-f0-stylized-cap.md",
+      "summary": "平均音高高于 165 Hz。",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "音高够高、自然度低：“太监音”",
+          "body": "平均音高高于 165 Hz。\n\n自然度低于 50。\n\n女性化综合分最高 30。\n\n这组分数对应的听感就是“太监音”：音高已经升高，声音不像正常说话。"
+        },
+        {
+          "heading": "分数解释",
+          "body": "音高项已经过关。\n\n自然度项没有过关。\n\n声音又高，又明显偏离日常说话，听感容易变得尖、假、挤、悬着。系统据此把它归为高音高、低自然度，不把这种声音视为女性化，并把最高分限制在 30。\n\n当前音色分主要以典型男女声样本训练，覆盖不到“太监音”这种组合，因此在本规则分支中不能作为有效判断依据。音色分较高，不能证明这条发声路线已经成功。"
+        },
+        {
+          "heading": "改进方向",
+          "body": "现有音高已经够高，主要短板是自然度。继续从 180 Hz 推到 200 Hz，不会把太监音变成正常女声，只会让声音更紧、更假。应先恢复正常的连续说话，再处理音色与加分。\n\n相关阅读：[自然度低怎么练](../../practice/zh_cn/02-naturalness.md)。"
+        }
+      ],
+      "rawContent": "# 音高够高、自然度低：“太监音”\n\n平均音高高于 165 Hz。\n\n自然度低于 50。\n\n女性化综合分最高 30。\n\n这组分数对应的听感就是“太监音”：音高已经升高，声音不像正常说话。\n\n## 分数解释\n\n音高项已经过关。\n\n自然度项没有过关。\n\n声音又高，又明显偏离日常说话，听感容易变得尖、假、挤、悬着。系统据此把它归为高音高、低自然度，不把这种声音视为女性化，并把最高分限制在 30。\n\n当前音色分主要以典型男女声样本训练，覆盖不到“太监音”这种组合，因此在本规则分支中不能作为有效判断依据。音色分较高，不能证明这条发声路线已经成功。\n\n## 改进方向\n\n现有音高已经够高，主要短板是自然度。继续从 180 Hz 推到 200 Hz，不会把太监音变成正常女声，只会让声音更紧、更假。应先恢复正常的连续说话，再处理音色与加分。\n\n相关阅读：[自然度低怎么练](../../practice/zh_cn/02-naturalness.md)。\n"
+    },
+    {
+      "id": "rules/05-low-f0-natural-cap",
+      "language": "zh_cn",
+      "title": "声音自然、音高过低：“顺男声线”",
+      "category": "rules",
+      "filename": "rules/zh_cn/05-low-f0-natural-cap.md",
+      "summary": "自然度不低于 50。",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "声音自然、音高过低：“顺男声线”",
+          "body": "自然度不低于 50。\n\n平均音高不高于 165 Hz。\n\n女性化综合分最高 59。\n\n这组结果对应自然、稳定、音高偏低的男性声线，也就是“顺男声线”。"
+        },
+        {
+          "heading": "分数解释",
+          "body": "自然度已经过线，说明声音接近正常说话。\n\n音高没有超过 165 Hz，女性化音高项没有过线。\n\n音色分再高，也无法单独补上音高这一项，因此综合分最高只能是 59。"
+        },
+        {
+          "heading": "下一步",
+          "body": "如果目标仍是提高女性化综合分，应直接进入音高训练。\n\n相关阅读：[音高偏低怎么练](../../practice/zh_cn/03-low-f0.md)。"
+        }
+      ],
+      "rawContent": "# 声音自然、音高过低：“顺男声线”\n\n自然度不低于 50。\n\n平均音高不高于 165 Hz。\n\n女性化综合分最高 59。\n\n这组结果对应自然、稳定、音高偏低的男性声线，也就是“顺男声线”。\n\n## 分数解释\n\n自然度已经过线，说明声音接近正常说话。\n\n音高没有超过 165 Hz，女性化音高项没有过线。\n\n音色分再高，也无法单独补上音高这一项，因此综合分最高只能是 59。\n\n## 下一步\n\n如果目标仍是提高女性化综合分，应直接进入音高训练。\n\n相关阅读：[音高偏低怎么练](../../practice/zh_cn/03-low-f0.md)。\n"
+    },
+    {
+      "id": "rules/06-low-f0-stylized-cap",
+      "language": "zh_cn",
+      "title": "音高偏低又不自然：“窝囊又低沉”",
+      "category": "rules",
+      "filename": "rules/zh_cn/06-low-f0-stylized-cap.md",
+      "summary": "平均音高不高于 165 Hz。",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "音高偏低又不自然：“窝囊又低沉”",
+          "body": "平均音高不高于 165 Hz。\n\n自然度低于 50。\n\n女性化综合分最高 20。\n\n这组声音低、紧、放不开，对应的听感就是“窝囊又低沉”。"
+        },
+        {
+          "heading": "分数解释",
+          "body": "音高项失败。\n\n自然度项失败。\n\n音色分再高，也无法抵消低音高和低自然度，最终最高只有 20。\n\n声音长期压在低处，会显得退缩；声音又不像日常说话，可能紧、闷、虚，或者每句话都缩在同一个位置。音高与自然表达同时偏离，听感就会变得窝囊。"
+        },
+        {
+          "heading": "改进方向",
+          "body": "应先处理自然度，让声音能够正常、连续地说完整句话，避免一开口就压低或夹紧。自然度稳定后，再单独处理音高。两项同时乱改，容易把一种不自然替换成另一种不自然。\n\n相关阅读：[自然度低怎么练](../../practice/zh_cn/02-naturalness.md)、[音高偏低怎么练](../../practice/zh_cn/03-low-f0.md)。"
+        }
+      ],
+      "rawContent": "# 音高偏低又不自然：“窝囊又低沉”\n\n平均音高不高于 165 Hz。\n\n自然度低于 50。\n\n女性化综合分最高 20。\n\n这组声音低、紧、放不开，对应的听感就是“窝囊又低沉”。\n\n## 分数解释\n\n音高项失败。\n\n自然度项失败。\n\n音色分再高，也无法抵消低音高和低自然度，最终最高只有 20。\n\n声音长期压在低处，会显得退缩；声音又不像日常说话，可能紧、闷、虚，或者每句话都缩在同一个位置。音高与自然表达同时偏离，听感就会变得窝囊。\n\n## 改进方向\n\n应先处理自然度，让声音能够正常、连续地说完整句话，避免一开口就压低或夹紧。自然度稳定后，再单独处理音高。两项同时乱改，容易把一种不自然替换成另一种不自然。\n\n相关阅读：[自然度低怎么练](../../practice/zh_cn/02-naturalness.md)、[音高偏低怎么练](../../practice/zh_cn/03-low-f0.md)。\n"
+    },
+    {
+      "id": "rules/07-high-f0-male-cap",
+      "language": "zh_cn",
+      "title": "音高偏高、音色分低：“清亮、单薄”的男性声线",
+      "category": "rules",
+      "filename": "rules/zh_cn/07-high-f0-male-cap.md",
+      "summary": "平均音高高于 165 Hz。",
+      "userPersona": "",
+      "coreGoal": "",
+      "targetPreferences": [
+        "feminine"
+      ],
+      "sections": [
+        {
+          "heading": "音高偏高、音色分低：“清亮、单薄”的男性声线",
+          "body": "平均音高高于 165 Hz。\n\n自然度不低于 50。\n\n音色分低于 50。"
+        },
+        {
+          "heading": "分数解释",
+          "body": "音高项已经过关。\n\n正常说话项已经过关。\n\n但女性化音色没有形成。\n\n声音已经变高，但整体音色不是女性化的，因此高音保留下来，男性声线也仍然存在。综合分因此被限制在 59。\n\n当前主要问题在音色，不在音高。继续把音高往上推，不会把清亮、单薄的男声变成女性声线，还可能增加发声负担。"
+        },
+        {
+          "heading": "改进方向",
+          "body": "应优先提高音色分，随后重新检查自然度。\n\n相关阅读：[音色分低怎么练](../../practice/zh_cn/01-vfp.md)。"
+        }
+      ],
+      "rawContent": "# 音高偏高、音色分低：“清亮、单薄”的男性声线\n\n平均音高高于 165 Hz。\n\n自然度不低于 50。\n\n音色分低于 50。\n\n## 分数解释\n\n音高项已经过关。\n\n正常说话项已经过关。\n\n但女性化音色没有形成。\n\n声音已经变高，但整体音色不是女性化的，因此高音保留下来，男性声线也仍然存在。综合分因此被限制在 59。\n\n当前主要问题在音色，不在音高。继续把音高往上推，不会把清亮、单薄的男声变成女性声线，还可能增加发声负担。\n\n## 改进方向\n\n应优先提高音色分，随后重新检查自然度。\n\n相关阅读：[音色分低怎么练](../../practice/zh_cn/01-vfp.md)。\n"
+    }
+  ]
+}

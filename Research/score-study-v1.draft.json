@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "mode": "offline_design_only",
+  "study_id": "pitchee.score-alignment.v1.draft",
+  "consent_id": "online-score-alignment.v1.draft",
+  "baseline_id": "direction-score-v1",
+  "candidate_id": "continuous-base-v1",
+  "directions": ["feminine", "masculine"],
+  "sampling": {
+    "invitation_probability": 0.25,
+    "max_invitations": 5,
+    "max_screens": 100,
+    "batch_days": 7,
+    "horizon_days": 90
+  },
+  "vector": {
+    "definition": "installation-means-26-v1",
+    "dimensions": 26,
+    "scale_squared": 12,
+    "l2_bound": 1.0
+  },
+  "privacy": {
+    "unit": "installation",
+    "adjacency": "add_remove",
+    "mechanism": "ideal_gaussian_zcdp",
+    "epsilon_cap": 2.0,
+    "delta": 0.0000001,
+    "max_releases": 13,
+    "use_sampling_amplification": false
+  },
+  "analysis": {
+    "minimum_installations": 100,
+    "practical_margin_ordinal": 0.25,
+    "noise_family_alpha": 0.01,
+    "sampling_family_alpha": 0.04
+  },
+  "launch_evidence": {
+    "frozen_model_core_and_rule_identity": null,
+    "separate_online_consent": null,
+    "reviewed_secure_aggregation_and_noise": null,
+    "unlinked_eligibility_and_replay_prevention": null,
+    "durable_cross_study_privacy_accounting": null,
+    "fixed_schedule_and_threshold_transcript_review": null,
+    "device_storage_and_withdrawal_validation": null,
+    "independent_label_and_power_review": null
+  }
+}

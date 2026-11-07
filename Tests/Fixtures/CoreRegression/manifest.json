@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "https://github.com/project-pitchee/Core",
+  "sourceCommit": "5831e3cca1dde8416d0cf0c971c7ff0935fa2c1c",
+  "sourcePath": "platform/android/benchmark/app/src/main/assets/test_audio",
+  "sourceLicense": "GPL-3.0; repository-wide LICENSE, no separate audio notice found",
+  "minimumLongSpeechSeconds": 5.0,
+  "minimumLongSamples": 1,
+  "maximumFiles": 20,
+  "maximumTotalBytes": 10485760,
+  "samples": [
+    {
+      "file": "01_daxin_nanlu.wav",
+      "sha256": "ead7711a7f6736c6fdc30e43f8c9a62860e99888ae8fad7dc6fa98d33e4b0ca9",
+      "bytes": 112676,
+      "inputSeconds": 3.5186875,
+      "referenceSpeechSeconds": 0.69,
+      "tier": "short",
+      "longExclusionReason": "Core-measured speech duration is below 5 seconds."
+    },
+    {
+      "file": "02_daxin_nanlu_2.wav",
+      "sha256": "cfdb32ef664c9766357766d3b3f47321b42f44765e0e1b97a943402e51dd24ee",
+      "bytes": 104484,
+      "inputSeconds": 3.2626875,
+      "referenceSpeechSeconds": 1.1,
+      "tier": "short",
+      "longExclusionReason": "Core-measured speech duration is below 5 seconds."
+    },
+    {
+      "file": "03_daxin_nanlu_3.wav",
+      "sha256": "6f762bf68ba3294de0b18e4723cdf2b54930145d5d54d3095a399d8a93c1bc79",
+      "bytes": 101752,
+      "inputSeconds": 3.1773125,
+      "referenceSpeechSeconds": 0.54,
+      "tier": "short",
+      "longExclusionReason": "Core-measured speech duration is below 5 seconds."
+    },
+    {
+      "file": "04_daxin_nanlu_4.wav",
+      "sha256": "014c3a3ee3211ea0e99d920ff091f74ed1cba228841111168176455681f436bb",
+      "bytes": 99022,
+      "inputSeconds": 3.092,
+      "referenceSpeechSeconds": 0.83,
+      "tier": "short",
+      "longExclusionReason": "Core-measured speech duration is below 5 seconds."
+    },
+    {
+      "file": "05_recording_4.wav",
+      "sha256": "e70cb0119e2348422949cc73549adba684dd3bade61d1d083a92633c74cb542b",
+      "bytes": 177572,
+      "inputSeconds": 5.5466875,
+      "referenceSpeechSeconds": 1.045,
+      "tier": "short",
+      "longExclusionReason": "Core-measured speech duration is below 5 seconds."
+    },
+    {
+      "file": "06_recording_5.wav",
+      "sha256": "ed32cf19d4b77b6d900a1ae3961bfb6ec246edcbdef662bae7e415ef518d90c9",
+      "bytes": 178936,
+      "inputSeconds": 5.5893125,
+      "referenceSpeechSeconds": 0.4,
+      "tier": "short",
+      "longExclusionReason": "Core-measured speech duration is below 5 seconds."
+    },
+    {
+      "file": "07_recording_6.wav",
+      "sha256": "1bd67354f7f53b8bfcd0b02f6ced97806a5317a1157369a8ab8b417881de3547",
+      "bytes": 173476,
+      "inputSeconds": 5.4186875,
+      "referenceSpeechSeconds": 0.36,
+      "tier": "short",
+      "longExclusionReason": "Core-measured speech duration is below 5 seconds."
+    },
+    {
+      "file": "08_recording_7.wav",
+      "sha256": "6b096c314e2875348f8e09a674ca44176695cb3cfcc98f1533727d8c871b2045",
+      "bytes": 178936,
+      "inputSeconds": 5.5893125,
+      "referenceSpeechSeconds": 0.7,
+      "tier": "short",
+      "longExclusionReason": "Core-measured speech duration is below 5 seconds."
+    },
+    {
+      "file": "09_super_pressed.wav",
+      "sha256": "fa69e585c090526d15c4f6e07c99d12c14bedc61839082a68194c3a9e7483db4",
+      "bytes": 165198,
+      "inputSeconds": 5.16,
+      "referenceSpeechSeconds": 3.98,
+      "tier": "short",
+      "longExclusionReason": "Core-measured speech duration is below 5 seconds."
+    },
+    {
+      "file": "10_natural.wav",
+      "sha256": "7cfc939a379fc570789e19209b0516a865b6bc83bc8fa0149ff5475193f4839c",
+      "bytes": 304078,
+      "inputSeconds": 9.5,
+      "referenceSpeechSeconds": 4.47,
+      "tier": "short",
+      "longExclusionReason": "Core-measured speech duration is below 5 seconds."
+    }
+  ]
+}

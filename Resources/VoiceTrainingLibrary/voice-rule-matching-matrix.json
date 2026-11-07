@@ -1,0 +1,33 @@
+{
+  "pass_boost": [
+    "rules/03-pass-boost"
+  ],
+  "high_f0_stylized_cap": [
+    "rules/04-high-f0-stylized-cap"
+  ],
+  "high_f0_male_cap": [
+    "rules/07-high-f0-male-cap"
+  ],
+  "low_f0_natural_cap": [
+    "rules/05-low-f0-natural-cap"
+  ],
+  "low_f0_stylized_cap": [
+    "rules/06-low-f0-stylized-cap"
+  ],
+  "f0_unavailable": [],
+  "continuous_below_pass": [
+    "rules/01-feminization-continuous-nopass"
+  ],
+  "continuous_pass": [
+    "rules/02-feminization-continuous-pass"
+  ],
+  "timbre": [
+    "practice/01-vfp"
+  ],
+  "naturalness": [
+    "practice/02-naturalness"
+  ],
+  "low_pitch": [
+    "practice/03-low-f0"
+  ]
+}

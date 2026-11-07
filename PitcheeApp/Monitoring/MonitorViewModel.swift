@@ -1,0 +1,599 @@
+//
+//  MonitorViewModel.swift
+//  Pitchee
+//
+//  Created by Ryo on 2026/10/5.
+//
+
+import AVFoundation
+import Foundation
+import Observation
+import OSLog
+
+enum MonitorKind: String, CaseIterable, Identifiable {
+    case spectrum, pitch
+
+    var id: String { rawValue }
+    var titleKey: String { "monitor.\(rawValue).title" }
+    var symbol: String { self == .spectrum ? "waveform.path" : "waveform.path.ecg" }
+}
+
+/// Each destination owns its microphone timeline. Playback freezes capture so
+/// the speaker cannot feed back into the microphone or evict the selected audio.
+@MainActor
+@Observable
+final class MonitorViewModel {
+    enum State { case idle, preparing, live, paused, replaying }
+    static let windowDurations: [TimeInterval] = [3, 5, 10, 15, 30]
+    private static let windowDurationKey = "monitor.window.duration"
+
+    let kind: MonitorKind
+    private let includesSpectrogram: Bool
+    private(set) var state: State = .idle
+    private(set) var errorMessage: String?
+    private(set) var windowDuration: TimeInterval = 10
+    private(set) var cursorTime: TimeInterval = 0
+    private let presentation = MonitorPresentation()
+    @ObservationIgnored private var playbackRange: ClosedRange<TimeInterval>?
+
+    @ObservationIgnored private var capture: MonitorAudioCapture?
+    @ObservationIgnored private var analyzer: PitcheeCoreAnalyzer?
+    @ObservationIgnored private var player: AVAudioPlayer?
+    @ObservationIgnored private var playerDelegate: MonitorPlaybackDelegate?
+    @ObservationIgnored private var operation: Task<Void, Never>?
+    @ObservationIgnored private var playbackClock: Task<Void, Never>?
+    @ObservationIgnored private var displayClock: Task<Void, Never>?
+    @ObservationIgnored private var needsPresentation = false
+    @ObservationIgnored private var audioTeardown: Task<Void, Never>?
+    @ObservationIgnored private var generation = UUID()
+    @ObservationIgnored private var sessionOwner: UUID?
+    @ObservationIgnored private var observers: [NSObjectProtocol] = []
+    @ObservationIgnored private var sceneIsActive = true
+    @ObservationIgnored private var awaitingPermission = false
+
+    nonisolated private static let logger = Logger(subsystem: "com.lvyzhan.Pitchee", category: "Monitoring")
+
+    init(kind: MonitorKind, includesSpectrogram: Bool = false) {
+        self.kind = kind
+        self.includesSpectrogram = includesSpectrogram
+        let storedDuration = UserDefaults.standard.double(forKey: Self.windowDurationKey)
+        windowDuration = Self.windowDurations.contains(storedDuration) ? storedDuration : 10
+        refreshPresentation()
+    }
+
+    var statusKey: String {
+        switch state {
+        case .idle: "monitor.status.ready"
+        case .preparing: "monitor.status.preparing"
+        case .live: "monitor.status.live"
+        case .paused: "monitor.status.paused"
+        case .replaying: "monitor.status.replaying"
+        }
+    }
+
+    var availableRange: ClosedRange<TimeInterval> { presentation.availableRange }
+    var hasAudio: Bool { availableRange.upperBound > availableRange.lowerBound }
+    var canRewind: Bool { !isBusy && cursorTime > availableRange.lowerBound }
+    var isBusy: Bool { state == .preparing }
+
+    var visibleRange: ClosedRange<TimeInterval> { presentation.pitchWindow.range }
+
+    var visiblePitchSamples: [LivePitchSample] {
+        presentation.pitchWindow.samples
+    }
+
+    var visiblePitchRange: ClosedRange<Double>? { presentation.pitchWindow.pitchRange }
+    var retainedPitchRange: ClosedRange<Double>? { presentation.retainedPitchRange }
+
+    var visibleSpectrogramColumns: [MonitorSpectrogramColumn] {
+        presentation.visibleSpectrogramColumns
+    }
+
+    /// A partial capture fills a fixed-width time window from the left. Its
+    /// existing columns keep their scale while new audio fills the empty area.
+    var spectrogramTimeRange: ClosedRange<TimeInterval> {
+        let range = visibleRange
+        return range.lowerBound...max(range.upperBound, range.lowerBound + windowDuration)
+    }
+
+    var currentPitchHz: Double? { presentation.currentPitchHz }
+
+    var currentSpectrum: MonitorSpectrumFrame? { presentation.currentSpectrum }
+
+    /// Frequency and amplitude readouts use the same strongest visible bin.
+    var currentSpectrumPeak: (frequencyHz: Double, amplitudeDBFS: Float)? {
+        currentSpectrum?.peak
+    }
+
+    var smoothedSpectrumPeak: (frequencyHz: Double, amplitudeDBFS: Float)? {
+        presentation.smoothedSpectrumPeak
+    }
+
+    var currentFrequencyHz: Double? {
+        kind == .pitch ? currentPitchHz : currentSpectrumPeak?.frequencyHz
+    }
+
+    func startOrResume() {
+        #if DEBUG
+        guard !ScreenshotMode.isEnabled else { return }
+        #endif
+        guard sceneIsActive, state != .live, !isBusy else { return }
+        stopAudio()
+        installObservers()
+        errorMessage = nil
+        cursorTime = presentation.duration
+        state = .preparing
+        refreshPresentation()
+        let token = generation
+        let owner = UUID()
+        sessionOwner = owner
+        awaitingPermission = true
+        let renderSpectrogram = includesSpectrogram
+        let previousTeardown = audioTeardown
+        operation = Task { [weak self] in
+            do {
+                // The previous engine and its in-flight detector callback
+                // must finish before reusing the analyzer or audio session.
+                await previousTeardown?.value
+                try Task.checkCancellation()
+                guard let self, generation == token else { return }
+                let granted = await withCheckedContinuation { continuation in
+                    AVAudioApplication.requestRecordPermission { continuation.resume(returning: $0) }
+                }
+                guard generation == token, !Task.isCancelled else { return }
+                // Permission completion can arrive before the system dismisses
+                // its prompt. Wait for the view's active event before opening
+                // the microphone; background/leaving cancels this operation.
+                while !sceneIsActive {
+                    try await Task.sleep(for: .milliseconds(50))
+                    guard generation == token else { return }
+                }
+                awaitingPermission = false
+                guard granted else {
+                    fail(String(localized: "recording.error.microphonePermissionDenied"))
+                    return
+                }
+
+                var preparedAnalyzer: PitcheeCoreAnalyzer?
+                if kind == .pitch {
+                    if analyzer == nil {
+                        let loaded = try await Task.detached(priority: .userInitiated) {
+                            try PitcheeCoreAnalyzer()
+                        }.value
+                        guard generation == token, !Task.isCancelled else { return }
+                        analyzer = loaded
+                    }
+                    preparedAnalyzer = analyzer
+                    try await preparedAnalyzer?.resetRealtimeF0()
+                }
+                guard generation == token, !Task.isCancelled else { return }
+                try await AudioSessionController.activate(owner: owner, use: .recording, holder: self)
+                guard generation == token, !Task.isCancelled else {
+                    AudioSessionController.deactivate(owner: owner)
+                    return
+                }
+
+                let offset = presentation.duration
+                // Resuming starts a fresh detector context; don't connect the
+                // previous voiced segment across an interval with no capture.
+                presentation.append(audio: [], pitch: [LivePitchSample(elapsedTime: offset, pitchHz: nil)], spectra: [])
+                let newCapture = MonitorAudioCapture()
+                capture = newCapture
+                try await newCapture.start(
+                    analyzer: preparedAnalyzer,
+                    needsSpectrum: kind == .spectrum,
+                    onUpdate: { [weak self] update in
+                        guard !Task.isCancelled else { return }
+                        // The capture worker calls this off MainActor. Render
+                        // each new FFT column once, within its bounded delivery
+                        // budget, so scrolling never repeats rasterization.
+                        let columns = renderSpectrogram
+                            ? Self.makeSpectrogramColumns(update.spectrumFrames, offset: offset) : []
+                        await MainActor.run { [weak self] in
+                            // First PCM can arrive before start resumes here.
+                            guard let self, generation == token,
+                                  state == .preparing || state == .live else { return }
+                            append(update, columns: columns, offset: offset)
+                        }
+                    },
+                    onError: { [weak self] error in
+                        Self.logger.error("Monitor capture failed: \(String(describing: error), privacy: .private)")
+                        Task { @MainActor [weak self] in
+                            guard let self, generation == token else { return }
+                            fail(String(localized: "monitor.error.capture"))
+                        }
+                    }
+                )
+                guard generation == token, !Task.isCancelled else { return }
+                state = .live
+                refreshPresentation()
+                startDisplayClock(token: token)
+            } catch {
+                guard let self, generation == token, !Task.isCancelled else { return }
+                Self.logger.error("Unable to start monitoring: \(String(describing: error), privacy: .private)")
+                if error is AudioSessionCoordinator.Failure {
+                    fail(String(localized: "monitor.error.sessionBusy"))
+                } else {
+                    fail(String(localized: "monitor.error.capture"))
+                }
+            }
+        }
+    }
+
+    func pause() {
+        if let player, let playbackRange {
+            cursorTime = min(playbackRange.upperBound, playbackRange.lowerBound + player.currentTime)
+        } else if playbackRange == nil, state == .live || state == .preparing {
+            // Include already-delivered PCM since the last display tick.
+            cursorTime = presentation.duration
+        }
+        stopAudio(clearPlaybackRange: false)
+        refreshPresentation()
+        state = hasAudio ? .paused : .idle
+    }
+
+    func seek(to time: TimeInterval) {
+        guard sceneIsActive, hasAudio, !isBusy else { return }
+        pause()
+        playbackRange = nil
+        cursorTime = MonitorTimeline.clampedTime(time, availableRange: availableRange)
+        refreshPresentation()
+    }
+
+    func rewindFiveSeconds() {
+        guard canRewind else { return }
+        pause()
+        playbackRange = nil
+        cursorTime = MonitorTimeline.rewind(time: cursorTime, by: 5, availableRange: availableRange)
+        refreshPresentation()
+    }
+
+    func setWindowDuration(_ seconds: TimeInterval) {
+        guard Self.windowDurations.contains(seconds) else { return }
+        if state == .replaying || state == .preparing { pause() }
+        playbackRange = nil
+        windowDuration = seconds
+        UserDefaults.standard.set(seconds, forKey: Self.windowDurationKey)
+        refreshPresentation()
+    }
+
+    /// Continue at the playhead; after completion, repeat the last selected range.
+    func toggleReplay() {
+        guard sceneIsActive, hasAudio, !isBusy else { return }
+        if state == .replaying {
+            pause()
+            return
+        }
+        pause()
+        if let playbackRange, playbackRange.contains(cursorTime) {
+            beginPlayback(range: playbackRange, startingAt: cursorTime < playbackRange.upperBound
+                          ? cursorTime : playbackRange.lowerBound)
+        } else if cursorTime < availableRange.upperBound {
+            let end = min(availableRange.upperBound, cursorTime + windowDuration)
+            beginPlayback(range: cursorTime...end, startingAt: cursorTime)
+        } else {
+            replayWindow()
+        }
+    }
+
+    func replayWindow() {
+        guard sceneIsActive, hasAudio, !isBusy else { return }
+        pause()
+        var range = playbackRange ?? MonitorTimeline.window(
+            endingAt: cursorTime, duration: windowDuration, availableRange: availableRange
+        )
+        // At the beginning of the retained timeline there is no preceding
+        // audio, so start at the playhead and play forward through the window.
+        if range.upperBound <= range.lowerBound {
+            let start = MonitorTimeline.clampedTime(cursorTime, availableRange: availableRange)
+            let end = min(availableRange.upperBound, start + windowDuration)
+            range = start...end
+        }
+        beginPlayback(range: range, startingAt: range.lowerBound)
+    }
+
+    private func beginPlayback(range: ClosedRange<TimeInterval>, startingAt: TimeInterval) {
+        let samples = presentation.audio(in: range)
+        guard !samples.isEmpty else {
+            playbackRange = nil
+            refreshPresentation()
+            return
+        }
+        installObservers()
+        errorMessage = nil
+        let token = generation
+        let owner = UUID()
+        sessionOwner = owner
+        state = .preparing
+        playbackRange = range
+        let initialTime = min(range.upperBound, max(range.lowerBound, startingAt))
+        cursorTime = initialTime
+        refreshPresentation()
+        let previousTeardown = audioTeardown
+        operation = Task { [weak self] in
+            do {
+                await previousTeardown?.value
+                try Task.checkCancellation()
+                guard let self, generation == token else { return }
+                let data = await Task.detached(priority: .userInitiated) {
+                    MonitorWaveEncoder.encode(samples)
+                }.value
+                try Task.checkCancellation()
+                try await AudioSessionController.activate(owner: owner, use: .playback, holder: self) { [weak self] in
+                    self?.pause()
+                }
+                guard generation == token, !Task.isCancelled else {
+                    AudioSessionController.deactivate(owner: owner)
+                    return
+                }
+                let audioPlayer = try AVAudioPlayer(data: data)
+                let delegate = MonitorPlaybackDelegate { [weak self] successful in
+                    guard let self, generation == token else { return }
+                    if successful {
+                        cursorTime = range.upperBound
+                        stopAudio(clearPlaybackRange: false)
+                        state = .paused
+                        refreshPresentation()
+                    } else {
+                        fail(String(localized: "monitor.error.playback"))
+                    }
+                }
+                playerDelegate = delegate
+                audioPlayer.delegate = delegate
+                player = audioPlayer
+                audioPlayer.currentTime = min(
+                    audioPlayer.duration,
+                    max(0, initialTime - range.lowerBound)
+                )
+                let played = await Task.detached(priority: .userInitiated) {
+                    audioPlayer.play()
+                }.value
+                guard played else { throw CocoaError(.fileReadUnknown) }
+                guard generation == token, !Task.isCancelled else {
+                    audioPlayer.stop()
+                    AudioSessionController.deactivate(owner: owner)
+                    return
+                }
+                cursorTime = initialTime
+                state = .replaying
+                refreshPresentation()
+                startPlaybackClock(token: token, range: range)
+            } catch {
+                AudioSessionController.deactivate(owner: owner)
+                guard let self, generation == token, !Task.isCancelled else { return }
+                fail(String(localized: error is AudioSessionCoordinator.Failure
+                    ? "monitor.error.sessionBusy" : "monitor.error.playback"))
+            }
+        }
+    }
+
+    func handleSceneInactive() {
+        // The system permission prompt also makes the scene inactive.
+        sceneIsActive = false
+        if !awaitingPermission { pause() }
+    }
+
+    func handleSceneActive() {
+        sceneIsActive = true
+    }
+
+    func stopForLeaving() {
+        pause()
+        observers.forEach(NotificationCenter.default.removeObserver)
+        observers.removeAll()
+        // Monitoring audio is ephemeral, never a saved recording.
+        presentation.reset(windowDuration: windowDuration, includesPitch: kind == .pitch)
+        cursorTime = 0
+        playbackRange = nil
+        analyzer = nil
+        errorMessage = nil
+        state = .idle
+    }
+
+    func clearError() { errorMessage = nil }
+
+    nonisolated private static func makeSpectrogramColumns(
+        _ frames: [MonitorSpectrumFrame], offset: TimeInterval = 0
+    ) -> [MonitorSpectrogramColumn] {
+        frames.compactMap { frame in
+            guard let image = MonitorSpectrogramRasterizer.makeColumn(frame: frame) else { return nil }
+            return MonitorSpectrogramColumn(elapsedTime: frame.elapsedTime + offset, image: image)
+        }
+    }
+
+    private func append(
+        _ update: MonitorCaptureUpdate, columns: [MonitorSpectrogramColumn], offset: TimeInterval
+    ) {
+        presentation.append(audio: update.samples, pitch: update.pitchFrames.map {
+            LivePitchSample(elapsedTime: offset + $0.elapsedTime, pitchHz: $0.pitchHz)
+        }, spectra: update.spectrumFrames.map {
+            $0.offset(by: offset)
+        }, columns: columns)
+        needsPresentation = true
+    }
+
+    private func refreshPresentation() {
+        if state == .live { cursorTime = presentation.duration }
+        presentation.publish(
+            cursorTime: cursorTime, windowDuration: windowDuration,
+            playbackRange: playbackRange, includesPitch: kind == .pitch
+        )
+        needsPresentation = false
+    }
+
+    private func startDisplayClock(token: UUID) {
+        displayClock?.cancel()
+        // Use elapsed wall time rather than capture timestamps: a burst of
+        // queued PCM must not turn into an equally large burst of UI updates.
+        let interval: Duration = kind == .pitch ? .nanoseconds(33_333_334) : .milliseconds(100)
+        displayClock = Task { [weak self] in
+            while !Task.isCancelled {
+                do { try await Task.sleep(for: interval) } catch { return }
+                guard let self, generation == token, state == .live else { return }
+                if needsPresentation { refreshPresentation() }
+            }
+        }
+    }
+
+    private func startPlaybackClock(token: UUID, range: ClosedRange<TimeInterval>) {
+        playbackClock = Task { [weak self] in
+            while !Task.isCancelled {
+                do { try await Task.sleep(for: .milliseconds(33)) } catch { return }
+                guard let self, generation == token, state == .replaying, let player else { return }
+                cursorTime = min(range.upperBound, range.lowerBound + player.currentTime)
+                refreshPresentation()
+            }
+        }
+    }
+
+    private func stopAudio(clearPlaybackRange: Bool = true) {
+        generation = UUID()
+        awaitingPermission = false
+        operation?.cancel()
+        operation = nil
+        playbackClock?.cancel()
+        playbackClock = nil
+        displayClock?.cancel()
+        displayClock = nil
+        if let capture, let sessionOwner {
+            AudioSessionController.retainUntilStopped(owner: sessionOwner, holder: capture)
+        }
+        let captureTeardown = capture?.stop()
+        capture = nil
+        player?.stop()
+        player = nil
+        playerDelegate = nil
+        if clearPlaybackRange { playbackRange = nil }
+        let owner = sessionOwner
+        sessionOwner = nil
+        if let captureTeardown {
+            let previousTeardown = audioTeardown
+            // Teardown includes onUpdate, which needs MainActor. Wait in this
+            // independent task before releasing the old recording session.
+            audioTeardown = Task {
+                await previousTeardown?.value
+                await captureTeardown.value
+                if let owner { AudioSessionController.deactivate(owner: owner) }
+            }
+        } else if let owner {
+            // Playback can release synchronously for coordinator handoff.
+            AudioSessionController.deactivate(owner: owner)
+        }
+    }
+
+    private func fail(_ message: String) {
+        pause()
+        errorMessage = message
+    }
+
+    private func installObservers() {
+        guard observers.isEmpty else { return }
+        for name in [AVAudioSession.interruptionNotification, AVAudioSession.routeChangeNotification,
+                     AVAudioSession.mediaServicesWereResetNotification] {
+            let observer = NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) {
+                [weak self] notification in
+                // A category change is part of our own capture/playback switch.
+                if notification.name == AVAudioSession.routeChangeNotification {
+                    let value = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt
+                    guard value == AVAudioSession.RouteChangeReason.oldDeviceUnavailable.rawValue
+                        || value == AVAudioSession.RouteChangeReason.newDeviceAvailable.rawValue
+                        || value == AVAudioSession.RouteChangeReason.noSuitableRouteForCategory.rawValue else { return }
+                }
+                if notification.name == AVAudioSession.interruptionNotification {
+                    let value = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
+                    guard value == AVAudioSession.InterruptionType.began.rawValue else { return }
+                }
+                // Delivery is already on .main. Deferring this could pause a
+                // new capture started after the interruption was handled.
+                MainActor.assumeIsolated { self?.pause() }
+            }
+            observers.append(observer)
+        }
+    }
+
+    isolated deinit {
+        observers.forEach(NotificationCenter.default.removeObserver)
+        stopAudio()
+    }
+
+    #if DEBUG
+    /// Isolated fixtures for previews and the opt-in simulator review launch argument.
+    /// No microphone, audio session, or persistent data is used.
+    static func preview(kind: MonitorKind, includesSpectrogram: Bool = false) -> MonitorViewModel {
+        if includesSpectrogram { return spectrogramPreview(kind: kind) }
+        let model = MonitorViewModel(kind: kind)
+        model.windowDuration = 10
+        let sampleRate = MonitorTimeline.sampleRate
+        let samples: [Float] = (0..<Int(sampleRate * 12)).map { index in
+            let time = Double(index) / sampleRate
+            return Float(sin(2 * .pi * 196 * time) * 0.16 + sin(2 * .pi * 392 * time) * 0.05)
+        }
+        let pitches = (0...120).map { index in
+            let time = Double(index) * 0.1
+            let pitch = (42...49).contains(index) || (84...90).contains(index)
+                ? nil : 196 + sin(time * 1.6) * 14 + sin(time * 4.1) * 3
+            return LivePitchSample(elapsedTime: time, pitchHz: pitch)
+        }
+        let analyzer = try! MonitorSpectrumAnalyzer()
+        model.presentation.append(audio: samples, pitch: pitches, spectra: analyzer.process(samples))
+        model.cursorTime = 11.9
+        model.state = .paused
+        model.refreshPresentation()
+        return model
+    }
+
+    private static func spectrogramPreview(kind: MonitorKind) -> MonitorViewModel {
+        let model = MonitorViewModel(kind: kind, includesSpectrogram: true)
+        let sampleRate = MonitorTimeline.sampleRate
+        func pitch(at time: TimeInterval) -> Double? {
+            let phraseTime = time.truncatingRemainder(dividingBy: 3.2)
+            guard (0.22..<2.55).contains(phraseTime) else { return nil }
+            let progress = (phraseTime - 0.22) / 2.33
+            return 188 + 44 * sin(progress * .pi) + 4 * sin(time * 4.1)
+        }
+        // Integrate the changing fundamental into phase so its harmonics bend
+        // together. Short fades keep pauses from adding artificial click bands.
+        var phase = 0.0
+        let samples: [Float] = (0..<Int(sampleRate * 12)).map { index in
+            let time = Double(index) / sampleRate
+            let frequency = pitch(at: time)
+            phase += 2 * .pi * (frequency ?? 188) / sampleRate
+            guard frequency != nil else { return 0 }
+            let phraseTime = time.truncatingRemainder(dividingBy: 3.2)
+            let envelope = min(1, (phraseTime - 0.22) / 0.04, (2.55 - phraseTime) / 0.06)
+            let signal = sin(phase) * 0.22 + sin(2 * phase) * 0.10
+                + sin(3 * phase) * 0.055 + sin(4 * phase) * 0.028
+                + sin(5 * phase) * 0.015 + sin(7 * phase) * 0.008
+            return Float(signal * envelope)
+        }
+        let pitches = (0...120).map { index in
+            let time = Double(index) * 0.1
+            return LivePitchSample(elapsedTime: time, pitchHz: pitch(at: time))
+        }
+        let analyzer = try! MonitorSpectrumAnalyzer()
+        let spectra = analyzer.process(samples)
+        model.presentation.append(audio: samples, pitch: pitches, spectra: spectra,
+                                  columns: Self.makeSpectrogramColumns(spectra))
+        model.cursorTime = 11.9
+        model.state = .paused
+        model.refreshPresentation()
+        return model
+    }
+    #endif
+}
+
+private final class MonitorPlaybackDelegate: NSObject, AVAudioPlayerDelegate {
+    let completion: @MainActor (Bool) -> Void
+
+    init(completion: @escaping @MainActor (Bool) -> Void) {
+        self.completion = completion
+    }
+
+    nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        Task { @MainActor [weak self] in self?.completion(flag) }
+    }
+
+    nonisolated func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
+        Task { @MainActor [weak self] in self?.completion(false) }
+    }
+}

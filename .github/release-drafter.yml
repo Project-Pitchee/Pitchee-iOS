@@ -1,0 +1,52 @@
+# Release Drafter v7 schema. Type and version labels are assigned by the author;
+# area:* labels are maintained by labeler and do not select release categories.
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+tag-prefix: v
+categories:
+  - title: 新功能
+    exclusive: true
+    semver-increment: minor
+    when:
+      label: type:feature
+  - title: 修复
+    exclusive: true
+    when:
+      label: type:fix
+  - title: 核心与评分
+    exclusive: true
+    when:
+      label: type:core
+  - title: 练习文章
+    exclusive: true
+    when:
+      label: type:articles
+  - title: 语言与文案
+    exclusive: true
+    when:
+      label: type:localization
+  - title: 维护
+    exclusive: true
+    when:
+      label: type:maintenance
+  - type: pre-exclude
+    when:
+      label: skip-changelog
+  - type: version-resolver
+    semver-increment: major
+    when:
+      label: version:major
+  - type: version-resolver
+    semver-increment: minor
+    when:
+      label: version:minor
+  - type: version-resolver
+    semver-increment: patch
+change-template: '- $TITLE (#$NUMBER)'
+change-title-escapes: '\<*_&@#`'
+template: |
+  ## 更新内容
+
+  $CHANGES
+
+  <!-- 发版前由 Ryo 润色：面向用户写「它是什么 + 怎么用」。避免否定式清单和甩锅式表述。Publish 才发布；审核由 Ryo 手动提交。 -->

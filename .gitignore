@@ -1,0 +1,19 @@
+# Xcode user state
+xcuserdata/
+*.xcuserstate
+
+# Build output
+DerivedData/
+.build/
+build/
+
+# Generated Python bytecode
+__pycache__/
+*.py[cod]
+
+# Downloaded native dependencies (restore with Scripts/bootstrap-native-dependencies.sh)
+Dependencies/Artifacts/ONNXRuntime/Headers/
+Dependencies/Artifacts/ONNXRuntime/LICENSE
+Dependencies/Artifacts/ONNXRuntime/onnxruntime.xcframework/
+
+.DS_Store

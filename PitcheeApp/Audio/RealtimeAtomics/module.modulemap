@@ -1,0 +1,4 @@
+module CPitcheeAudioAtomics {
+    header "RealtimeAtomics.h"
+    export *
+}

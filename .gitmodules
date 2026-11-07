@@ -1,0 +1,7 @@
+[submodule "Dependencies/PitcheeCore"]
+	path = Dependencies/PitcheeCore
+	url = https://github.com/project-pitchee/Core.git
+	shallow = true
+[submodule "Docs/Voice-Training-Library"]
+	path = Docs/Voice-Training-Library
+	url = https://github.com/project-pitchee/Articles.git

@@ -1,0 +1,147 @@
+name: Regression
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: regression-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  script-suite:
+    name: Script regression report
+    runs-on: macos-26
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - name: Record environment and checkpoints
+        id: toolchain
+        continue-on-error: true
+        run: |
+          xcodebuild -version
+          xcrun --sdk iphonesimulator --show-sdk-version
+          git submodule status --recursive
+      - name: Restore native test dependencies
+        id: native
+        continue-on-error: true
+        run: bash Scripts/bootstrap-native-dependencies.sh
+      - name: Boot a dedicated simulator for the PDF regression script
+        id: simulator
+        continue-on-error: true
+        run: python3 Scripts/ci/regression-simulator.py create
+      - name: Report partial environment preparation
+        env:
+          TOOLCHAIN_OUTCOME: ${{ steps.toolchain.outcome }}
+          NATIVE_OUTCOME: ${{ steps.native.outcome }}
+          SIMULATOR_OUTCOME: ${{ steps.simulator.outcome }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          results = {name: os.environ[name + '_OUTCOME'] for name in ('TOOLCHAIN', 'NATIVE', 'SIMULATOR')}
+          text = '## Regression environment preparation\n\n' + '\n'.join(f'- {name.lower()}: {value}' for name, value in results.items()) + '\n'
+          if any(value != 'success' for value in results.values()):
+              text += '\nEnvironment preparation is incomplete. Every script still runs; affected failures are classified individually.\n'
+              print('::warning::Regression environment preparation is incomplete; inspect the setup report.')
+          output = Path('.build/regression')
+          output.mkdir(parents=True, exist_ok=True)
+          (output / 'setup.md').write_text(text)
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write(text)
+          PY
+      - name: Run every repository test script
+        # Per-script failures are reported without ending the loop or gating PRs.
+        run: python3 Scripts/ci/regression-suite.py --timeout 240 --output .build/regression
+      - name: Remove the temporary regression simulator
+        if: always()
+        run: python3 Scripts/ci/regression-simulator.py cleanup
+      - name: Preserve individual logs and report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: regression-script-logs
+          path: .build/regression/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  simulator-build:
+    name: Simulator build and size report
+    runs-on: macos-26
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - name: Check simulator SDK and shared scheme
+        id: environment
+        run: python3 Scripts/ci/simulator-environment.py
+      - name: Restore native build dependencies
+        if: steps.environment.outputs.available == 'true'
+        run: bash Scripts/bootstrap-native-dependencies.sh
+      - name: Build both simulator architectures without signing
+        if: steps.environment.outputs.available == 'true'
+        id: build
+        continue-on-error: true
+        run: |
+          mkdir -p .build/regression-build
+          set -o pipefail
+          xcodebuild build -project Pitchee.xcodeproj -scheme Pitchee \
+            -configuration Release -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath .build/regression-derived \
+            ARCHS='arm64 x86_64' ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee .build/regression-build/xcodebuild.log
+      - name: Restore the previous successful main size history
+        if: steps.build.outcome == 'success' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 Scripts/ci/restore-size-history.py --output .build/regression-build/size-history.csv
+      - name: Report size trend
+        if: steps.build.outcome == 'success' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        id: size
+        continue-on-error: true
+        run: |
+          python3 Scripts/ci/app-size-trend.py \
+            --app .build/regression-derived/Build/Products/Release-iphonesimulator/Pitchee.app \
+            --history .build/regression-build/size-history.csv \
+            --out .build/regression-build/size-report.md --threshold-mb 2
+      - name: Report build outcome
+        if: always()
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          SDK_AVAILABLE: ${{ steps.environment.outputs.available }}
+        run: |
+          python3 Scripts/ci/simulator-environment.py --report-build "$BUILD_OUTCOME" --available "$SDK_AVAILABLE"
+      - name: Preserve build logs and report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: regression-build-report
+          path: .build/regression-build/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+      - name: Preserve rolling size history
+        if: steps.size.outcome == 'success'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: regression-size-history
+          path: .build/regression-build/size-history.csv
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 90

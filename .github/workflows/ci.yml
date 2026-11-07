@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: ['**'] # Branch commits only; version tags use release validation.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Repository checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - name: Record locked submodule checkpoints
+        run: |
+          git submodule status --recursive
+          git ls-tree HEAD Dependencies/PitcheeCore Docs/Voice-Training-Library
+      - name: Check generated articles
+        run: python3 Scripts/build-voice-training-library.py --check
+      - name: Validate every localization
+        # Swift runtime coverage stays in Regression; this gate needs no Xcode.
+        run: |
+          python3 Scripts/validate-localizations.py
+          python3 -m unittest discover -s Tests/Localization -p 'test_*.py'
+      - name: Test CI helpers
+        run: |
+          python3 -m unittest discover -s Tests/CI -p 'test_*.py'
+          node --test Tests/CI/*.test.cjs
+      - name: Validate workflow syntax
+        run: bash Scripts/ci/check-workflows.sh
+      # The pin-change comment is written by pr-governance.yml from trusted base
+      # code. This pull_request job has no write token, including for forks.

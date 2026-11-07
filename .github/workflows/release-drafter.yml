@@ -1,0 +1,33 @@
+name: Release drafter
+
+on:
+  push:
+    branches: [main]
+  pull_request_target:
+    branches: [main]
+    types: [labeled, unlabeled, closed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-drafter
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    # A label change on an already merged PR must refresh the draft too.
+    if: github.event_name != 'pull_request_target' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      # API only: no checkout of PR code in this privileged workflow.
+      - uses: release-drafter/release-drafter@978bb0b30c5ee8cdd332ced253758157150d43f0 # v7.10.0
+        with:
+          config-name: release-drafter.yml@main
+          commitish: main
+          publish: false

@@ -1,0 +1,28 @@
+# Area labels describe paths. Release Drafter consumes separate type:* labels.
+area:core:
+  - changed-files:
+      - any-glob-to-any-file: ['Dependencies/PitcheeCore', 'PitcheeApp/Interop/**']
+area:articles:
+  - changed-files:
+      - any-glob-to-any-file: ['Docs/Voice-Training-Library', 'Docs/Voice-Training-Library/**', 'Resources/VoiceTrainingLibrary/**', 'Scripts/build-voice-training-library.py']
+area:monitor:
+  - changed-files:
+      - any-glob-to-any-file: ['PitcheeApp/Monitoring/**', 'Tests/Monitoring/**', 'Tests/Recording/**']
+area:scoring:
+  - changed-files:
+      - any-glob-to-any-file: ['PitcheeApp/Analysis/**', '**/*Scoring*.swift', '**/*Score*.swift', 'Tests/Readiness/**']
+area:insights:
+  - changed-files:
+      - any-glob-to-any-file: ['PitcheeApp/Insights/**', 'Tests/Insights/**', 'PitcheeApp/App/Dashboard*.swift']
+area:practice:
+  - changed-files:
+      - any-glob-to-any-file: ['PitcheeApp/Practice/**', 'Tests/Practice/**']
+area:app:
+  - changed-files:
+      - any-glob-to-any-file: ['PitcheeApp/App/**', 'Pitchee.xcodeproj/**', 'Resources/Assets.xcassets/**', 'Tests/App/**', 'Tests/Navigation/**']
+area:localization:
+  - changed-files:
+      - any-glob-to-any-file: ['**/*.xcstrings', 'Tests/Localization/**', 'Scripts/validate-localizations.py']
+area:ci:
+  - changed-files:
+      - any-glob-to-any-file: ['.github/**', 'ci_scripts/**', 'Scripts/**', 'Screenshots/**', 'Tests/CI/**', 'Tests/Cloud/**']

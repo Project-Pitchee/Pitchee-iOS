@@ -1,0 +1,88 @@
+name: Submodule regression comment
+
+on:
+  workflow_run:
+    workflows: [Submodule regression]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: submodule-regression-comment-${{ github.event.workflow_run.head_repository.id }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+jobs:
+  comment:
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion != 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    steps:
+      # No checkout, PR code, artifact extraction, package install, or cache.
+      # The trusted default-branch workflow treats artifact Markdown as data.
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const os = require('os');
+            const {execFileSync} = require('child_process');
+            const run = context.payload.workflow_run;
+            if (run.repository.full_name !== `${context.repo.owner}/${context.repo.repo}`) {
+              throw new Error('Unexpected workflow repository');
+            }
+            const workflow = await github.rest.actions.getWorkflow({
+              ...context.repo, workflow_id: 'submodule-regression.yml'
+            });
+            if (run.workflow_id !== workflow.data.id) throw new Error('Unexpected source workflow ID');
+            const candidates = await github.paginate(github.rest.repos.listPullRequestsAssociatedWithCommit, {
+              ...context.repo, commit_sha: run.head_sha, per_page: 100
+            });
+            const prs = candidates.filter(pr => pr.state === 'open' && pr.head.sha === run.head_sha
+              && pr.base.repo.full_name === `${context.repo.owner}/${context.repo.repo}` && pr.base.ref === 'main');
+            if (prs.length !== 1) {
+              core.notice('No unique current PR head matches this run; no stale or ambiguous comment posted.');
+              return;
+            }
+            const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
+              ...context.repo, run_id: run.id, per_page: 100
+            });
+            const texts = [];
+            for (const name of ['core-regression-report', 'articles-regression-report']) {
+              const found = artifacts.filter(a => a.name === name && !a.expired);
+              if (found.length === 0) continue;
+              if (found.length !== 1 || found[0].size_in_bytes > 2000000) throw new Error('Invalid report artifact');
+              const download = await github.rest.actions.downloadArtifact({
+                ...context.repo, artifact_id: found[0].id, archive_format: 'zip'
+              });
+              const bytes = Buffer.from(download.data);
+              if (bytes.length > 2000000) throw new Error('Report archive exceeds size limit');
+              const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'pitchee-report-'));
+              try {
+                const archive = path.join(temp, 'report.zip');
+                fs.writeFileSync(archive, bytes);
+                // Read one bounded text member in memory. Never extract files.
+                const code = "import sys,zipfile\nz=zipfile.ZipFile(sys.argv[1])\nentries=z.infolist()\nif len(entries)!=1 or entries[0].filename!='report.md' or entries[0].file_size>120000: raise ValueError('Invalid report archive')\nprint(z.read(entries[0]).decode('utf-8'))";
+                const report = execFileSync('python3', ['-c', code, archive], {
+                  encoding: 'utf8', timeout: 5000, maxBuffer: 130000
+                });
+                texts.push(report.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/@/g, '@\u200b'));
+              } finally { fs.rmSync(temp, {recursive: true, force: true}); }
+            }
+            const marker = '<!-- pitchee-submodule-regression -->';
+            const introduction = `${marker}\n[Regression run](${run.html_url}) · head \`${run.head_sha}\` · execution status: **${run.conclusion}**\n\n`;
+            const report = texts.length ? texts.join('\n\n') : '**Execution did not produce a comparison report.** Open the run for the missing prerequisite; this is not a zero-difference result.';
+            const body = introduction + report.slice(0, 55000) + '\n\nExact differences only; acceptance remains a reviewer decision. Complete numeric output is retained for 30 days. Audio is never an artifact.';
+            // Recheck immediately before writing so a new push cannot get stale feedback.
+            const latest = (await github.rest.pulls.get({...context.repo, pull_number: prs[0].number})).data;
+            if (latest.head.sha !== run.head_sha || latest.state !== 'open') return;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...context.repo, issue_number: prs[0].number, per_page: 100
+            });
+            const prior = comments.find(c => c.user.login === 'github-actions[bot]' && c.body.startsWith(marker));
+            if (prior) await github.rest.issues.updateComment({...context.repo, comment_id: prior.id, body});
+            else await github.rest.issues.createComment({...context.repo, issue_number: prs[0].number, body});

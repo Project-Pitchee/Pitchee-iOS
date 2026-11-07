@@ -1,0 +1,5 @@
+# Owner policy: never distribute audio through the repository.
+*.wav
+*.pcm
+*.zip
+*.tar*

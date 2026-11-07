@@ -1,0 +1,4 @@
+module CPitcheeHNR {
+    header "HNRBridge.h"
+    export *
+}

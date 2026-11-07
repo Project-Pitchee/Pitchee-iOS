@@ -1,0 +1,50 @@
+name: TestFlight notes
+
+on:
+  workflow_dispatch:
+    inputs:
+      marketing_version:
+        description: 'Repair an exact marketing version; leave both fields empty for latest'
+        type: string
+      build_number:
+        description: 'Exact build number, paired with marketing_version'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testflight-notes
+  cancel-in-progress: false
+
+jobs:
+  notes:
+    # Run after Cloud uploads the intended build. A source push happens before
+    # that upload and could select an older build. No PR event has access.
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: testflight-notes
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Install API signing dependencies
+        run: python3 -m pip install -r Scripts/ci/testflight-requirements.txt
+      - name: Fill bilingual test notes after processing
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+          ASC_APP_ID: ${{ vars.ASC_APP_ID }}
+          NOTES_VERSION: ${{ inputs.marketing_version }}
+          NOTES_BUILD: ${{ inputs.build_number }}
+        shell: bash
+        run: |
+          args=(--soft-fail --timeout 900)
+          if [[ -n "$NOTES_VERSION" || -n "$NOTES_BUILD" ]]; then
+            args+=(--marketing-version "$NOTES_VERSION" --build-number "$NOTES_BUILD")
+          else
+            args+=(--latest)
+          fi
+          python3 Scripts/fill-testflight-notes.py "${args[@]}"
