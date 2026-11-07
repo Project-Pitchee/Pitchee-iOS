@@ -11,10 +11,11 @@ import SwiftUI
 // iOSStyleOnBoarding/iOSStyleOnBoarding/Helpers/iOS26StyleOnBoarding.swift.
 struct OnboardingView: View {
     private enum Page: Int, Hashable, CaseIterable {
-        case welcome, privacy, preferences
+        case intro, welcome, privacy, preferences
 
         var title: LocalizedStringKey {
             switch self {
+            case .intro: "common.brand.wordmark"
             case .welcome: "onboarding.welcome.title"
             case .privacy: "onboarding.welcome.featurePrivacy.title"
             case .preferences: "onboarding.preferences.title"
@@ -23,6 +24,7 @@ struct OnboardingView: View {
 
         var subtitle: LocalizedStringKey {
             switch self {
+            case .intro: "onboarding.welcome.subtitle"
             case .welcome: "onboarding.welcome.subtitle"
             case .privacy: "onboarding.welcome.featurePrivacy.description"
             case .preferences: "onboarding.preferences.subtitle"
@@ -33,7 +35,7 @@ struct OnboardingView: View {
     private let onFinished: () -> Void
     private var launchPhase: LaunchPhase = .finished
 
-    @State private var page: Page = .welcome
+    @State private var page: Page = .intro
     @State private var selectedVoice: VoicePreference?
     @State private var captionHeight: CGFloat = 150
     @AppStorage(AppStorageKey.voicePreference) private var savedVoicePreference = ""
@@ -56,11 +58,13 @@ struct OnboardingView: View {
                     ScrollViewReader { proxy in
                         ScrollView(showsIndicators: false) {
                             VStack(spacing: 20) {
-                                if page == .preferences {
+                                if page == .intro {
+                                    brandWelcome
+                                } else if page == .preferences {
                                     textContent
                                     preferences
                                 } else {
-                                    phonePreview
+                                    appPreview
                                         .frame(height: max(240, geometry.size.height - captionHeight - 40))
                                     textContent
                                 }
@@ -87,19 +91,50 @@ struct OnboardingView: View {
         .preferredColorScheme(.dark)
     }
 
-    private var phonePreview: some View {
+    private var brandWelcome: some View {
+        VStack(spacing: 28) {
+            OnboardingBrandIcon()
+                // The launch overlay lands here, then hands the same image back to the scroll view.
+                .opacity(launchPhase == .finished ? 1 : 0)
+                .anchorPreference(key: OnboardingLaunchIconAnchorKey.self, value: .bounds) { $0 }
+                .accessibilityHidden(true)
+
+            VStack(spacing: 12) {
+                Text(verbatim: "Pitchee")
+                    .font(.system(.largeTitle, design: .rounded).weight(.semibold))
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityIdentifier("onboarding.intro.brand")
+                Text("onboarding.intro.welcome", tableName: "Onboarding")
+                    .font(.title3)
+                    .foregroundStyle(.white.opacity(0.75))
+                    .accessibilityIdentifier("onboarding.intro.welcome")
+            }
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityFocused($titleFocused)
+        }
+        .padding(.vertical, 32)
+        .frame(maxWidth: .infinity)
+    }
+
+    private var appPreview: some View {
         GeometryReader { geometry in
-            let width = min(300, geometry.size.width - 40, (geometry.size.height - 20) / 2.05)
-            let shape = RoundedRectangle(cornerRadius: width * 0.14, style: .continuous)
+            let canvas = OnboardingAppPreview.canvasSize
+            let aspectRatio = canvas.height / canvas.width
+            let width = max(1, min(300, geometry.size.width - 40, (geometry.size.height - 20) / aspectRatio))
+            let cornerRadius = width * 0.13
+            let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
 
             ScrollView(.horizontal) {
                 HStack(spacing: 12) {
                     ForEach([Page.welcome, .privacy], id: \.self) { previewPage in
-                        phoneContent(for: previewPage)
-                            .frame(width: 320, height: 656)
-                            .background(Color(uiColor: .systemGroupedBackground))
-                            .scaleEffect(width / 320)
-                            .frame(width: width, height: width * 2.05)
+                        OnboardingAppPreview(screen: previewPage == .welcome ? .recording : .result)
+                            .padding(.top, 24)
+                            .padding(.bottom, 16)
+                            .background(.black)
+                            .frame(width: canvas.width, height: canvas.height)
+                            .scaleEffect(width / canvas.width)
+                            .frame(width: width, height: width * aspectRatio)
                             .clipShape(shape)
                     }
                 }
@@ -109,81 +144,38 @@ struct OnboardingView: View {
             .scrollIndicators(.hidden)
             .scrollTargetBehavior(.viewAligned)
             .scrollPosition(id: Binding<Page?>(get: { page }, set: { _ in }))
-            .frame(width: width, height: width * 2.05)
+            .frame(width: width, height: width * aspectRatio)
             .clipShape(shape)
             .overlay {
-                shape.stroke(.white.opacity(0.8), lineWidth: 5)
-                shape.stroke(.black, lineWidth: 3)
-                shape.stroke(.black, lineWidth: 5).padding(-4)
+                shape.strokeBorder(.white.opacity(0.1), lineWidth: 0.5)
             }
-            .overlay(alignment: .top) {
-                Capsule().fill(.black).frame(width: width * 0.3, height: width * 0.075)
-                    .padding(.top, 10)
+            .background {
+                RoundedRectangle(cornerRadius: cornerRadius + 4, style: .continuous)
+                    .fill(Color(white: 0.07))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: cornerRadius + 4, style: .continuous)
+                            .strokeBorder(
+                                LinearGradient(colors: [.white.opacity(0.38), .white.opacity(0.08), .white.opacity(0.2)],
+                                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                                lineWidth: 1
+                            )
+                    }
+                    .padding(-4)
             }
+            .shadow(color: .black.opacity(0.3), radius: 12, y: 6)
             .compositingGroup()
             .scaleEffect(page == .privacy && !reduceMotion ? 1.08 : 1, anchor: .top)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        // The phone is an illustration; the full privacy information remains in the form.
+        // The app preview is decorative; the full privacy information remains in the form.
         .dynamicTypeSize(.large)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
 
-    private func phoneContent(for previewPage: Page) -> some View {
-        VStack(spacing: 24) {
-            HStack(spacing: 10) {
-                Image("Default")
-                    .resizable().scaledToFit()
-                    .frame(width: 38, height: 38)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                Text("common.brand.wordmark")
-                    .font(.headline).tracking(2)
-                Spacer()
-            }
-
-            if previewPage == .welcome {
-                Spacer(minLength: 0)
-                Image(systemName: "waveform")
-                    .font(.system(size: 110, weight: .light))
-                    .foregroundStyle(Color.pitcheeAccent.gradient)
-                    .frame(height: 170)
-                    .frame(maxWidth: .infinity)
-                    .background {
-                        Circle().fill(Color.pitcheeAccent.opacity(0.25)).blur(radius: 40)
-                    }
-                Text("onboarding.welcome.artworkBadge")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
-                Spacer(minLength: 0)
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("onboarding.welcome.featureTrend.title")
-                        .font(.title2.bold())
-                    Text("onboarding.welcome.featureTrend.description")
-                        .font(.callout).foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(22)
-                .liquidGlass(tint: Color.pitcheeAccent.opacity(0.12), cornerRadius: 24)
-            } else {
-                Image(systemName: "lock.shield.fill")
-                    .font(.system(size: 64, weight: .regular))
-                    .foregroundStyle(Color.pitcheeAccent.gradient)
-                    .padding(.top, 12)
-                PrivacyPromiseView()
-                Spacer(minLength: 0)
-            }
-
-            Capsule().fill(.white.opacity(0.7)).frame(width: 100, height: 4)
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 52)
-        .padding(.bottom, 12)
-    }
-
     private var textContent: some View {
         ZStack {
-            ForEach(Page.allCases, id: \.self) { item in
+            ForEach([Page.welcome, .privacy, .preferences], id: \.self) { item in
                 VStack(spacing: 8) {
                     Text(item.title)
                         .font(.title2.weight(.semibold))
@@ -239,7 +231,7 @@ struct OnboardingView: View {
             .accessibilityLabel("onboarding.pagination.pageIndicator.a11y \(page.rawValue + 1) \(Page.allCases.count)")
 
             Button(action: advance) {
-                Text(page == .preferences ? "onboarding.footer.finishSetup" : "onboarding.footer.nextPage")
+                Text(continueTitle)
                     .font(.headline)
                     .frame(maxWidth: .infinity, minHeight: 32)
                     .padding(.vertical, 6)
@@ -263,6 +255,14 @@ struct OnboardingView: View {
                 .padding(-30)
                 .ignoresSafeArea(edges: .bottom)
                 .allowsHitTesting(false)
+        }
+    }
+
+    private var continueTitle: LocalizedStringKey {
+        switch page {
+        case .intro: "onboarding.footer.startSetup"
+        case .preferences: "onboarding.footer.finishSetup"
+        case .welcome, .privacy: "onboarding.footer.nextPage"
         }
     }
 
@@ -309,20 +309,36 @@ private struct LiquidGlassProminentButtonStyleModifier: ViewModifier {
 
 #if DEBUG
 private extension OnboardingView {
-    init(previewingPreferences: Bool) {
+    init(previewingPreferences: Bool, launchPhase: LaunchPhase) {
         onFinished = {}
-        _page = State(initialValue: previewingPreferences ? .preferences : .welcome)
+        self.launchPhase = launchPhase
+        _page = State(initialValue: previewingPreferences ? .preferences : .intro)
         _selectedVoice = State(initialValue: .feminine)
     }
 }
 
+private struct OnboardingPreview: View {
+    var showsPreferences = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var launchPhase: LaunchPhase = .initial
+
+    var body: some View {
+        OnboardingView(previewingPreferences: showsPreferences, launchPhase: launchPhase)
+            .defaultAppStorage(DebugPreviewDefaults.store)
+            .task(id: reduceMotion) {
+                guard launchPhase != .finished else { return }
+                await LaunchAnimation.run(showsOnboarding: true, reduceMotion: reduceMotion) {
+                    launchPhase = $0
+                }
+            }
+    }
+}
+
 #Preview("Debug - Welcome") {
-    OnboardingView(onFinished: {})
-        .defaultAppStorage(DebugPreviewDefaults.store)
+    OnboardingPreview()
 }
 
 #Preview("Debug - Voice Preference") {
-    OnboardingView(previewingPreferences: true)
-        .defaultAppStorage(DebugPreviewDefaults.store)
+    OnboardingPreview(showsPreferences: true)
 }
 #endif

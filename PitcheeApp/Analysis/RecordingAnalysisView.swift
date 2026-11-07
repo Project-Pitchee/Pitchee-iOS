@@ -114,10 +114,10 @@ struct RecordingResultView: View {
     let quality: RecordingQuality?
     let recordedPreference: VoicePreference?
     private let showsBackground: Bool
+    private let showsTrainingSuggestions: Bool
     private let pitchStatistics: RecordingPitchStatistics
     private let pitchTimeline: PitchTimeline
 
-    @ObservedObject private var library = VoiceTrainingLibraryLoader.shared
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var showsVoiceDetails = false
     @State private var selectedVoiceArticle: VoiceArticle?
@@ -132,16 +132,6 @@ struct RecordingResultView: View {
         voicePreference.score(for: result)
     }
 
-    private var trainingRecommendation: VoiceTrainingRecommendation {
-        VoiceLibraryMatcher.recommend(
-            for: result,
-            preference: voicePreference,
-            quality: quality,
-            volumeStatistics: volumeStatistics,
-            store: library.store
-        )
-    }
-
     init(
         result: PitcheeAnalysisResult,
         volumeStatistics: RecordingVolumeStatistics?,
@@ -149,7 +139,8 @@ struct RecordingResultView: View {
         recordingNotice: String? = nil,
         quality: RecordingQuality? = nil,
         recordedPreference: VoicePreference? = nil,
-        showsBackground: Bool = true
+        showsBackground: Bool = true,
+        showsTrainingSuggestions: Bool = true
     ) {
         self.result = result
         self.volumeStatistics = volumeStatistics
@@ -158,22 +149,28 @@ struct RecordingResultView: View {
         self.quality = quality
         self.recordedPreference = recordedPreference
         self.showsBackground = showsBackground
+        self.showsTrainingSuggestions = showsTrainingSuggestions
         self.pitchStatistics = RecordingPitchStatistics(pitch: result.f0)
         self.pitchTimeline = PitchTimeline(result: result)
     }
 
     var body: some View {
-        FoldAwareArrangementView(
-            primary: { resultPane(resultOverview) },
-            secondary: { resultPane(resultSecondary) },
-            regular: { resultScroll(allContent) }
-        )
+        Group {
+            if showsTrainingSuggestions {
+                FoldAwareArrangementView(
+                    primary: { resultPane(resultOverview) },
+                    secondary: { resultPane(resultSecondary) },
+                    regular: { resultScroll(allContent) }
+                )
+            } else {
+                resultScroll(resultOverview)
+            }
+        }
         .background {
             if showsBackground {
                 Color(uiColor: .systemGroupedBackground)
             }
         }
-        .task { await library.load() }
         .sheet(isPresented: $showsVoiceDetails) {
             voiceDetailsSheet
         }
@@ -283,7 +280,14 @@ struct RecordingResultView: View {
 
     private var resultSecondary: some View {
         VStack(alignment: .leading, spacing: 28) {
-            suggestionsSection
+            RecordingTrainingSuggestions(
+                result: result,
+                preference: voicePreference,
+                quality: quality,
+                volumeStatistics: volumeStatistics,
+                onSelectArticle: { selectedVoiceArticle = $0 },
+                onBrowseLibrary: { showsAllTrainingArticles = true }
+            )
         }
     }
 
@@ -307,32 +311,6 @@ struct RecordingResultView: View {
     private func resultPane<Content: View>(_ content: Content) -> some View {
         resultScroll(content)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private var suggestionsSection: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            PracticeSuggestionsSection(suggestions: trainingRecommendation.prioritySuggestions) { article in
-                selectedVoiceArticle = article
-            }
-
-            Button {
-                showsAllTrainingArticles = true
-            } label: {
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    Label("practice.suggestions.browseLibrary", systemImage: "books.vertical")
-                        .font(.subheadline.weight(.semibold))
-                        .fixedSize(horizontal: false, vertical: true)
-                    Spacer(minLength: 0)
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.tertiary)
-                }
-                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(Color.pitcheeAccent)
-        }
     }
 
     private var voiceDetailsSheet: some View {
@@ -538,6 +516,56 @@ struct RecordingResultView: View {
         value.formatted(.number.precision(.fractionLength(0)))
     }
 
+}
+
+/// Article loading belongs to the optional suggestions, so a result can also
+/// render from supplied values alone in the onboarding app preview.
+private struct RecordingTrainingSuggestions: View {
+    let result: PitcheeAnalysisResult
+    let preference: VoicePreference
+    let quality: RecordingQuality?
+    let volumeStatistics: RecordingVolumeStatistics?
+    let onSelectArticle: (VoiceArticle) -> Void
+    let onBrowseLibrary: () -> Void
+
+    @ObservedObject private var library = VoiceTrainingLibraryLoader.shared
+
+    private var trainingRecommendation: VoiceTrainingRecommendation {
+        VoiceLibraryMatcher.recommend(
+            for: result,
+            preference: preference,
+            quality: quality,
+            volumeStatistics: volumeStatistics,
+            store: library.store
+        )
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            PracticeSuggestionsSection(suggestions: trainingRecommendation.prioritySuggestions) { article in
+                onSelectArticle(article)
+            }
+
+            Button {
+                onBrowseLibrary()
+            } label: {
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    Label("practice.suggestions.browseLibrary", systemImage: "books.vertical")
+                        .font(.subheadline.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.pitcheeAccent)
+        }
+        .task { await library.load() }
+    }
 }
 
 private struct ScoreExplanationView: View {

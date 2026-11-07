@@ -13,41 +13,14 @@ import Combine
 struct ScoringView: View {
     let model: AnalysisViewModel
     @Binding var practicePath: [PracticeRoute]
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var showsRecordingError = false
 
     var body: some View {
-        GeometryReader { geometry in
-            let wide = geometry.size.width >= 700 && !dynamicTypeSize.isAccessibilitySize
-            ScrollView {
-                if wide {
-                    HStack(alignment: .top, spacing: 40) {
-                        ScoringReadout(model: model)
-                            .frame(width: 240, alignment: .leading)
-                        ScoringInstrument(model: model,
-                                          height: max(180, min(340, geometry.size.height - 180)))
-                    }
-                    .padding(.vertical, 28)
-                } else {
-                    VStack(alignment: .leading, spacing: 28) {
-                        ScoringReadout(model: model)
-                        ScoringInstrument(model: model,
-                                          height: dynamicTypeSize.isAccessibilitySize
-                                          ? 240 : max(220, min(360, geometry.size.height * 0.42)))
-                    }
-                    .padding(.top, 24)
-                    .padding(.bottom, 20)
-                }
-            }
-            .scrollBounceBehavior(.basedOnSize)
-            .scrollIndicators(.hidden)
-            .padding(.horizontal, wide ? 32 : 24)
-            .frame(maxWidth: 980)
-            .frame(maxWidth: .infinity)
+        ScoringPageLayout {
+            ScoringReadout(model: model)
+        } chart: {
+            ScoringPitchChart(model: model)
         }
-        .background(Color(uiColor: .systemBackground).ignoresSafeArea())
-        .navigationTitle("recording.screen.title")
-        .navigationBarTitleDisplayMode(.inline)
         .alert("recording.error.startFailed.title", isPresented: $showsRecordingError) {
             Button("common.action.ok", role: .cancel) { model.clearRecordingError() }
         } message: {
@@ -83,12 +56,97 @@ struct ScoringView: View {
     }
 }
 
+/// The recording page rendered from values, without capture or navigation state.
+/// Live recording supplies independently subscribed leaves to the same layout.
+struct ScoringContent: View {
+    let snapshot: ScoringPitchSnapshot
+    let currentPitch: Double?
+    let elapsedTime: TimeInterval
+
+    var body: some View {
+        ScoringPageLayout {
+            ScoringReadoutContent(currentPitch: currentPitch) {
+                ScoringElapsedTimeContent(clock: scoringClock(elapsedTime))
+            }
+        } chart: {
+            ScoringPitchChartContent(snapshot: snapshot)
+        }
+    }
+}
+
+private struct ScoringPageLayout<Readout: View, Chart: View>: View {
+    let readout: Readout
+    let chart: Chart
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    init(@ViewBuilder readout: () -> Readout, @ViewBuilder chart: () -> Chart) {
+        self.readout = readout()
+        self.chart = chart()
+    }
+
+    var body: some View {
+        GeometryReader { geometry in
+            let wide = geometry.size.width >= 700 && !dynamicTypeSize.isAccessibilitySize
+            ScrollView {
+                if wide {
+                    HStack(alignment: .top, spacing: 40) {
+                        readout.frame(width: 240, alignment: .leading)
+                        ScoringInstrument(height: max(180, min(340, geometry.size.height - 180))) {
+                            chart
+                        }
+                    }
+                    .padding(.vertical, 28)
+                } else {
+                    VStack(alignment: .leading, spacing: 28) {
+                        readout
+                        ScoringInstrument(height: dynamicTypeSize.isAccessibilitySize
+                                          ? 240 : max(220, min(360, geometry.size.height * 0.42))) {
+                            chart
+                        }
+                    }
+                    .padding(.top, 24)
+                    .padding(.bottom, 20)
+                }
+            }
+            .scrollBounceBehavior(.basedOnSize)
+            .scrollIndicators(.hidden)
+            .padding(.horizontal, wide ? 32 : 24)
+            .frame(maxWidth: 980)
+            .frame(maxWidth: .infinity)
+        }
+        .background(Color(uiColor: .systemBackground).ignoresSafeArea())
+        .navigationTitle("recording.screen.title")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
 /// Each live leaf subscribes to its own input. A clock tick must not rebuild
 /// the trace, and a pitch frame must not relayout the passage or controls.
 private struct ScoringReadout: View {
     let model: AnalysisViewModel
-    @ScaledMetric(relativeTo: .largeTitle) private var valueSize = 58.0
     @State private var currentPitch: Double?
+
+    var body: some View {
+        ScoringReadoutContent(currentPitch: currentPitch) {
+            ScoringElapsedTime(model: model)
+        }
+        .onReceive(model.$livePitchSamples.combineLatest(model.$state)
+            .map { samples, state in
+                state == .recording ? ScoringPitchSnapshot.currentPitch(in: samples) : nil
+            }
+            .removeDuplicates()) { currentPitch = $0 }
+    }
+}
+
+private struct ScoringReadoutContent<ElapsedTime: View>: View {
+    let currentPitch: Double?
+    let elapsedTime: ElapsedTime
+    @ScaledMetric(relativeTo: .largeTitle) private var valueSize = 58.0
+
+    init(currentPitch: Double?, @ViewBuilder elapsedTime: () -> ElapsedTime) {
+        self.currentPitch = currentPitch
+        self.elapsedTime = elapsedTime()
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -109,19 +167,23 @@ private struct ScoringReadout: View {
                 .accessibilityIdentifier("scoring.frequency")
             }
 
-            ScoringElapsedTime(model: model)
+            elapsedTime
         }
-        .onReceive(model.$livePitchSamples.combineLatest(model.$state)
-            .map { samples, state in
-                state == .recording ? ScoringPitchSnapshot.currentPitch(in: samples) : nil
-            }
-            .removeDuplicates()) { currentPitch = $0 }
     }
 }
 
 private struct ScoringElapsedTime: View {
     let model: AnalysisViewModel
     @State private var clock = scoringClock(0)
+
+    var body: some View {
+        ScoringElapsedTimeContent(clock: clock)
+            .onReceive(model.$elapsedTime.map(scoringClock).removeDuplicates()) { clock = $0 }
+    }
+}
+
+private struct ScoringElapsedTimeContent: View {
+    let clock: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -135,18 +197,21 @@ private struct ScoringElapsedTime: View {
                 .foregroundStyle(.secondary)
         }
         .accessibilityElement(children: .combine)
-        .onReceive(model.$elapsedTime.map(scoringClock).removeDuplicates()) { clock = $0 }
     }
 }
 
-private struct ScoringInstrument: View {
-    let model: AnalysisViewModel
+private struct ScoringInstrument<Chart: View>: View {
     let height: CGFloat
+    let chart: Chart
+
+    init(height: CGFloat, @ViewBuilder chart: () -> Chart) {
+        self.height = height
+        self.chart = chart()
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            ScoringPitchChart(model: model)
-                .frame(height: height)
+            chart.frame(height: height)
 
             VStack(alignment: .leading, spacing: 12) {
                 Text("recording.reference.title")
@@ -172,6 +237,17 @@ private struct ScoringPitchChart: View {
     @State private var snapshot = ScoringPitchSnapshot(samples: [])
 
     var body: some View {
+        ScoringPitchChartContent(snapshot: snapshot)
+            .onReceive(model.$livePitchSamples) { samples in
+                snapshot = ScoringPitchSnapshot(samples: samples)
+            }
+    }
+}
+
+private struct ScoringPitchChartContent: View {
+    let snapshot: ScoringPitchSnapshot
+
+    var body: some View {
         ZStack {
             MonitorPitchPlot(samples: snapshot.samples,
                              timeRange: snapshot.timeRange,
@@ -190,9 +266,6 @@ private struct ScoringPitchChart: View {
                     .background(Color(uiColor: .systemBackground))
                     .allowsHitTesting(false)
             }
-        }
-        .onReceive(model.$livePitchSamples) { samples in
-            snapshot = ScoringPitchSnapshot(samples: samples)
         }
     }
 }

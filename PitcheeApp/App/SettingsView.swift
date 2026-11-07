@@ -110,19 +110,12 @@ struct SettingsView: View {
                     .accessibilityValue(Text(appVersion))
                     .accessibilityIdentifier("about.app.version")
                 LabeledContent("about.app.analysisEngine.label", value: "PitcheeCore (5831e3c)")
-            }
-
-            Section("settings.localTools.title") {
                 NavigationLink {
-                    LocalDiagnosticsView()
+                    AboutPitcheeView()
                 } label: {
-                    Label("settings.localDiagnostics.title", systemImage: "waveform.path.ecg")
+                    Text("screen.title", tableName: "AboutPitchee")
                 }
-                NavigationLink {
-                    LocalScoreStudyView()
-                } label: {
-                    Label("scoreStudy.settings.title", systemImage: "chart.bar.xaxis")
-                }
+                .accessibilityIdentifier("about.app.pitchee")
             }
         }
         .formStyle(.grouped)

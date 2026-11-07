@@ -11,12 +11,34 @@ final class OnboardingUITests: XCTestCase {
 
         let next = app.buttons["onboarding.continue"]
         let back = app.buttons["onboarding.back"]
+        let introWelcome = app.staticTexts["onboarding.intro.welcome"]
+        let wordmark = app.staticTexts["onboarding.intro.brand"]
         let feminine = app.buttons["onboarding.voice.feminine"]
         let masculine = app.buttons["onboarding.voice.masculine"]
         let undecided = app.buttons["onboarding.voice.undecided"]
 
         waitUntilHittable(next)
+        XCTAssertTrue(introWelcome.exists)
+        XCTAssertTrue(wordmark.exists)
+        XCTAssertEqual(wordmark.label, "Pitchee")
         XCTAssertFalse(back.exists)
+        screenshot("brand welcome", in: app)
+        next.tap()
+
+        waitUntilHittable(back)
+        XCTAssertFalse(introWelcome.exists)
+        XCTAssertFalse(feminine.exists)
+        back.tap()
+        XCTAssertTrue(introWelcome.waitForExistence(timeout: 5),
+                      "Going back from the first feature page must restore the brand welcome")
+        waitUntilHittable(next)
+        XCTAssertTrue(wordmark.exists)
+        XCTAssertFalse(back.exists)
+        screenshot("brand welcome after going back", in: app)
+        next.tap()
+
+        waitUntilHittable(back)
+        XCTAssertFalse(introWelcome.exists)
         screenshot("welcome", in: app)
         next.tap()
 
@@ -49,6 +71,7 @@ final class OnboardingUITests: XCTestCase {
         app.launch()
         waitForMain(in: app)
         XCTAssertFalse(next.exists, "Relaunching after completion must skip onboarding")
+        XCTAssertFalse(introWelcome.exists, "Completed onboarding must also skip the brand welcome")
 
         app.terminate()
         // This screenshot-only override is not used when verifying completion persistence.
@@ -58,6 +81,13 @@ final class OnboardingUITests: XCTestCase {
         ]
         app.launch()
         waitUntilHittable(next)
+        XCTAssertTrue(introWelcome.exists)
+        XCTAssertTrue(wordmark.exists)
+        XCTAssertFalse(back.exists)
+        screenshot("brand welcome at largest dynamic type", in: app)
+        next.tap()
+        waitUntilHittable(back)
+        XCTAssertFalse(introWelcome.exists)
         screenshot("welcome at largest dynamic type", in: app)
         next.tap()
         waitUntilHittable(back)

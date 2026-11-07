@@ -48,6 +48,18 @@ struct RecordingAccessoryContent: View {
         _state = State(initialValue: viewModel.state)
     }
 
+    var body: some View {
+        RecordingAccessoryControls(state: state, action: action, iconSize: iconSize)
+            .onReceive(viewModel.$state.removeDuplicates()) { state = $0 }
+    }
+}
+
+/// The same controls can illustrate recording without creating a capture model.
+struct RecordingAccessoryControls: View {
+    let state: AnalysisViewModel.State
+    let action: () -> Void
+    var iconSize: CGFloat = 26
+
     private var isRecording: Bool { state == .recording }
     private var isRequestingPermission: Bool { state == .requestingPermission }
     private var needsAnalysisScreen: Bool { state == .analyzing || state == .awaitingFeedback }
@@ -87,7 +99,6 @@ struct RecordingAccessoryContent: View {
         .padding(.vertical, 6)
         .frame(maxWidth: .infinity)
         .sensoryFeedback(.impact(weight: .light), trigger: isRecording)
-        .onReceive(viewModel.$state.removeDuplicates()) { state = $0 }
     }
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
