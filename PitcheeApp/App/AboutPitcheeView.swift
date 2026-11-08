@@ -6,7 +6,6 @@ struct AboutPitcheeView: View {
     @AppStorage(AppStorageKey.themeSelection) private var savedTheme = AppThemeOption.twilt.rawValue
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.colorSchemeContrast) private var contrast
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .largeTitle) private var headlineSize = 42
 
@@ -25,7 +24,9 @@ struct AboutPitcheeView: View {
                     hero(viewportHeight: geometry.size.height)
                     story
                     features
+                    onDeviceNote
                     communityLinks
+                    footer
                 }
                 .frame(maxWidth: 620)
                 .padding(.horizontal, dynamicTypeSize.isAccessibilitySize ? 24 : 28)
@@ -130,45 +131,67 @@ struct AboutPitcheeView: View {
         .padding(.bottom, 42)
     }
 
-    private var communityLinks: some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(spacing: 12))
-            : AnyLayout(HStackLayout(spacing: 12))
-
-        return VStack(spacing: 12) {
-            communityLink("link.github.title", destination: URL(string: "https://github.com/Project-Pitchee/Pitchee-iOS")!,
-                          identifier: "about.pitchee.github")
-            layout {
-                communityLink("link.qq.title", destination: URL(string: "https://qm.qq.com/q/w0pvVpKEyy")!,
-                              identifier: "about.pitchee.qq")
-                communityLink("link.discord.title", destination: URL(string: "https://discord.gg/djuAGWAcB")!,
-                              identifier: "about.pitchee.discord")
-            }
+    private var onDeviceNote: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("voiceProfile.privacyPromise.onDevice.title", tableName: "Localizable")
+                .font(.title2.weight(.semibold))
+                .tracking(-0.4)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+            Text("voiceProfile.privacyPromise.onDevice.description", tableName: "Localizable")
+                .font(.body)
+                .foregroundStyle(palette.secondaryText)
+                .lineSpacing(6)
+                .fixedSize(horizontal: false, vertical: true)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.bottom, 42)
+    }
+
+    private var communityLinks: some View {
+        VStack(spacing: 0) {
+            Divider().overlay(palette.accent.opacity(0.08))
+            communityLink("link.github.title",
+                          destination: URL(string: "https://github.com/Project-Pitchee/Pitchee-iOS")!,
+                          identifier: "about.pitchee.github")
+            Divider().overlay(palette.accent.opacity(0.08))
+            communityLink("link.discord.title",
+                          destination: URL(string: "https://discord.gg/djuAGWAcB")!,
+                          identifier: "about.pitchee.discord")
+            Divider().overlay(palette.accent.opacity(0.08))
+            communityLink("link.qq.title",
+                          destination: URL(string: "https://qm.qq.com/q/w0pvVpKEyy")!,
+                          identifier: "about.pitchee.qq")
+        }
+        .padding(.bottom, 42)
     }
 
     private func communityLink(_ title: LocalizedStringKey, destination: URL, identifier: String) -> some View {
         Link(destination: destination) {
-            HStack(spacing: 8) {
+            HStack(spacing: 12) {
                 Text(title, tableName: "AboutPitchee")
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(palette.primaryText)
                     .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 Image(systemName: "arrow.up.right")
-                    .font(.caption.weight(.medium))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(palette.accent)
                     .accessibilityHidden(true)
             }
-            .font(.subheadline.weight(.medium))
-            .foregroundStyle(palette.accent)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 14)
-            .frame(maxWidth: .infinity, minHeight: 48)
-            .background {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(reduceTransparency ? Color(uiColor: .secondarySystemGroupedBackground) : palette.surface)
-            }
-            .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .padding(.vertical, 16)
+            .frame(minHeight: 48)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(identifier)
+    }
+
+    private var footer: some View {
+        Text(verbatim: "Pitchee \(AppVersion.current)")
+            .font(.caption)
+            .foregroundStyle(palette.tertiary)
+            .frame(maxWidth: .infinity, alignment: .center)
     }
 }
 
