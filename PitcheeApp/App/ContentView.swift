@@ -351,7 +351,13 @@ private struct PianoKeysView: View {
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            noteGrid
+            VStack(alignment: .leading, spacing: 12) {
+                Text("piano.legend")
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 4)
+                noteGrid
+            }
                 .frame(maxWidth: 720)
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 20)

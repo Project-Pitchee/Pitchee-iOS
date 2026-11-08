@@ -61047,6 +61047,186 @@
         }
       }
     },
+    "piano.legend" : {
+      "comment" : "One-line legend under the Piano Keys title: card colors and their frequency ranges. Keep numbers and Hz unchanged.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "أزرق 92–139 Hz · وردي 185–277 Hz"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modrá 92–139 Hz · Růžová 185–277 Hz"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Blå 92–139 Hz · Pink 185–277 Hz"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Blau 92–139 Hz · Pink 185–277 Hz"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Μπλε 92–139 Hz · Ροζ 185–277 Hz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blue 92–139 Hz · Pink 185–277 Hz"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Azul 92–139 Hz · Rosa 185–277 Hz"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sininen 92–139 Hz · Pinkki 185–277 Hz"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bleu 92–139 Hz · Rose 185–277 Hz"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "כחול 92–139 Hz · ורוד 185–277 Hz"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "नीला 92–139 Hz · गुलाबी 185–277 Hz"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Plava 92–139 Hz · Ružičasta 185–277 Hz"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kék 92–139 Hz · Rózsaszín 185–277 Hz"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Biru 92–139 Hz · Merah muda 185–277 Hz"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Blu 92–139 Hz · Rosa 185–277 Hz"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "青 92–139 Hz · ピンク 185–277 Hz"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "파랑 92–139 Hz · 분홍 185–277 Hz"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Biru 92–139 Hz · Merah jambu 185–277 Hz"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Blauw 92–139 Hz · Roze 185–277 Hz"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niebieski 92–139 Hz · Różowy 185–277 Hz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Azul 92–139 Hz · Rosa 185–277 Hz"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Синий 92–139 Hz · Розовый 185–277 Hz"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Blå 92–139 Hz · Rosa 185–277 Hz"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "สีน้ำเงิน 92–139 Hz · สีชมพู 185–277 Hz"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mavi 92–139 Hz · Pembe 185–277 Hz"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Синій 92–139 Hz · Рожевий 185–277 Hz"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Xanh dương 92–139 Hz · Hồng 185–277 Hz"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蓝色 92–139 Hz · 粉色 185–277 Hz"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "藍色 92–139 Hz · 粉色 185–277 Hz"
+          }
+        }
+      }
+    },
     "practice.audio.lifetime" : {
       "comment" : "Guided practice and comparison. Keep goals, model outputs, recording checks, and personal listening feedback distinct.",
       "extractionState" : "manual",
@@ -111766,7 +111946,6 @@
         }
       }
     },
-
     "settings.privateStorage.unavailable.description" : {
       "comment" : "Shown when protected local storage cannot be opened. Existing history is retained.",
       "extractionState" : "manual",
