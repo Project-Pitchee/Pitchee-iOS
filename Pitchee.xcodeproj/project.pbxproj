@@ -949,8 +949,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.lvyzhan.Pitchee;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.rolvy.Pitchee;
+				PRODUCT_NAME = Pitchee;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -1003,8 +1003,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.lvyzhan.Pitchee;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.rolvy.Pitchee;
+				PRODUCT_NAME = Pitchee;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -1035,7 +1035,7 @@
 					"$(PROJECT_DIR)/PitcheeApp/Interop/Core/HNRBridge",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
-				PRODUCT_BUNDLE_IDENTIFIER = com.lvyzhan.PitcheeTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rolvy.PitcheeTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(inherited) $(PROJECT_DIR)/Dependencies/PitcheeCore/platform/ios $(PROJECT_DIR)/PitcheeApp/Audio/RealtimeAtomics $(PROJECT_DIR)/PitcheeApp/Interop/Core/HNRBridge";
@@ -1053,7 +1053,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
-				PRODUCT_BUNDLE_IDENTIFIER = com.lvyzhan.PitcheeUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rolvy.PitcheeUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -1076,7 +1076,7 @@
 					"$(PROJECT_DIR)/PitcheeApp/Interop/Core/HNRBridge",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
-				PRODUCT_BUNDLE_IDENTIFIER = com.lvyzhan.PitcheeTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rolvy.PitcheeTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(inherited) $(PROJECT_DIR)/Dependencies/PitcheeCore/platform/ios $(PROJECT_DIR)/PitcheeApp/Audio/RealtimeAtomics $(PROJECT_DIR)/PitcheeApp/Interop/Core/HNRBridge";
@@ -1094,7 +1094,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
-				PRODUCT_BUNDLE_IDENTIFIER = com.lvyzhan.PitcheeUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rolvy.PitcheeUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
