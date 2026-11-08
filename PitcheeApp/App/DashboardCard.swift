@@ -60,6 +60,29 @@ struct DashboardCard: View {
 
     private var showsDetails: Bool { size != .small }
 
+    /// Missing metrics keep their existing presentation. Complete daily results
+    /// use a compact summary until there are enough dates to draw a useful chart.
+    static func summaryDayCount(for component: DashboardComponent, snapshot: DashboardSnapshot) -> Int {
+        guard (1...3).contains(snapshot.recordDayCount) else { return 0 }
+        let points: [DashboardTrendPoint]
+        let current: Double?
+        switch component {
+        case .analysisCount, .openedDays: return 0
+        case .compositeScore:
+            points = snapshot.scorePoints
+            current = snapshot.latestScore
+        case .naturalness:
+            points = snapshot.naturalnessPoints
+            current = snapshot.latestNaturalness
+        case .meanPitch:
+            points = snapshot.pitchPoints
+            current = snapshot.latestPitch
+        }
+        return current != nil && points.count == snapshot.recordDayCount ? points.count : 0
+    }
+
+    private var summaryDayCount: Int { Self.summaryDayCount(for: component, snapshot: snapshot) }
+
     var body: some View {
         GeometryReader { geometry in
             VStack(alignment: .leading, spacing: 8) {
@@ -74,7 +97,9 @@ struct DashboardCard: View {
                 )
                 .padding(.leading, isEditing ? 28 : 0)
 
-                if size == .medium && !points.isEmpty {
+                if summaryDayCount > 0 {
+                    recordSummary
+                } else if size == .medium && !points.isEmpty {
                     HStack(alignment: .center, spacing: 16) {
                         readings
                             .frame(width: max(100, (geometry.size.width - 48) * 0.4), alignment: .leading)
@@ -95,6 +120,63 @@ struct DashboardCard: View {
             .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             .accessibilityElement(children: .combine)
         }
+    }
+
+    private var recordSummary: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if size == .medium {
+                HStack(alignment: .bottom, spacing: 12) {
+                    valueLabel
+                        .layoutPriority(1)
+                    Spacer(minLength: 0)
+                    latestRecordLabel(alignment: .trailing)
+                }
+            } else {
+                valueLabel
+                if size == .large || summaryDayCount == 1 {
+                    latestRecordLabel(alignment: .leading)
+                }
+            }
+
+            if summaryDayCount > 1 {
+                Divider().overlay(palette.secondaryText.opacity(0.12))
+                HStack(alignment: .top, spacing: 8) {
+                    ForEach(points) { point in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(point.date, format: .dateTime.month(.defaultDigits).day(.defaultDigits))
+                                .foregroundStyle(palette.secondaryText)
+                            Text(point.value.formatted(.number.precision(.fractionLength(component == .meanPitch ? 1 : 0))))
+                                .fontWeight(.medium)
+                                .foregroundStyle(point.id == points.last?.id ? tint : palette.secondaryText)
+                                .monospacedDigit()
+                        }
+                        .font(.caption2)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.65)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(Text(point.date, format: .dateTime.year().month().day()))
+                        .accessibilityValue(formattedValue(point.value))
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    }
+
+    private func latestRecordLabel(alignment: HorizontalAlignment) -> some View {
+        VStack(alignment: alignment, spacing: 3) {
+            if let date = snapshot.latestDate {
+                Text(date, format: .dateTime.month().day())
+            }
+            Text("insights.metric.latest.label")
+                .font(.caption2)
+                .lineLimit(2)
+        }
+        .font(.caption)
+        .foregroundStyle(palette.secondaryText)
+        .multilineTextAlignment(alignment == .trailing ? .trailing : .leading)
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private var readings: some View {

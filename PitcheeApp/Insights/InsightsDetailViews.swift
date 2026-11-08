@@ -11,10 +11,11 @@ import SwiftUI
 
 struct InsightsRangePicker: View {
     @Binding var selection: InsightsRange
+    var ranges: [InsightsRange] = InsightsRange.allCases
 
     var body: some View {
         Picker("insights.range.label", selection: $selection) {
-            ForEach(InsightsRange.allCases) { range in
+            ForEach(ranges) { range in
                 Text(range.title).tag(range)
             }
         }
@@ -239,6 +240,7 @@ struct InsightsMetricDetailView: View {
     private var assessments: [RecordingAssessment]
     let metric: InsightsMetric
     let range: InsightsRange
+    var now: Date = .now
     @AppStorage(AppStorageKey.voicePreference) private var savedVoicePreference = ""
 
     private var voicePreference: VoicePreference {
@@ -247,9 +249,9 @@ struct InsightsMetricDetailView: View {
 
     var body: some View {
         let dailyAssessments = InsightsData.dailyBest(
-            InsightsData.assessments(assessments, in: range), preference: voicePreference
+            InsightsData.assessments(assessments, in: range, relativeTo: now), preference: voicePreference
         )
-        let data = InsightsMetricChartData(assessments: dailyAssessments, metric: metric, preference: voicePreference)
+        let data = InsightsMetricChartData(assessments: dailyAssessments, metric: metric, preference: voicePreference, now: now)
         InsightsDetailContent {
             if data.samples.isEmpty {
                 InsightsEmptyState(title: "insights.metric.empty.title", description: "insights.metric.empty.description", symbol: metric.symbol)
@@ -282,7 +284,7 @@ private struct InsightsMetricChartData {
     let yDomain: ClosedRange<Double>
     let dateDomain: ClosedRange<Date>
 
-    init(assessments: [RecordingAssessment], metric: InsightsMetric, preference: VoicePreference) {
+    init(assessments: [RecordingAssessment], metric: InsightsMetric, preference: VoicePreference, now: Date = .now) {
         let calendar = Calendar.current
         samples = assessments.compactMap { assessment in
             metric.value(in: assessment, preference: preference).map {
@@ -301,7 +303,7 @@ private struct InsightsMetricChartData {
         } else {
             yDomain = 0...100
         }
-        let first = samples.first?.date ?? .now
+        let first = samples.first?.date ?? now
         let last = samples.last?.date ?? first
         dateDomain = first.addingTimeInterval(-43_200)...last.addingTimeInterval(43_200)
     }
@@ -380,20 +382,30 @@ struct InsightsActivityView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
     let range: InsightsRange
-    @State private var selectedDay = Calendar.current.startOfDay(for: .now)
+    var now: Date = .now
+    @State private var selectedDay: Date
+
+    init(range: InsightsRange, now: Date = .now) {
+        self.range = range
+        self.now = now
+        _selectedDay = State(initialValue: Calendar.current.startOfDay(for: now))
+    }
 
     private var calendar: Calendar { .current }
     private var openedDates: Set<Date> {
-        InsightsData.openedDates(from: openedDateKeys).filter { range.contains($0) }
+        InsightsData.openedDates(from: openedDateKeys).filter {
+            range.contains($0, relativeTo: now, calendar: calendar)
+        }
     }
     private var visibleAssessments: [RecordingAssessment] {
-        InsightsData.assessments(assessments, in: range)
+        InsightsData.assessments(assessments, in: range, relativeTo: now, calendar: calendar)
     }
     private var recordingDates: Set<Date> {
         Set(visibleAssessments.map { calendar.startOfDay(for: $0.recordedAt) })
     }
     private var earliestDate: Date {
-        range.startDate() ?? min(openedDates.min() ?? .now, visibleAssessments.last?.recordedAt ?? .now)
+        range.startDate(relativeTo: now, calendar: calendar)
+            ?? min(openedDates.min() ?? now, visibleAssessments.last?.recordedAt ?? now)
     }
 
     var body: some View {
@@ -427,13 +439,22 @@ struct InsightsActivityView: View {
             }
         }
         .onChange(of: range) {
-            if !range.contains(selectedDay) { selectedDay = calendar.startOfDay(for: .now) }
+            resetSelectionIfNeeded()
+        }
+        .onChange(of: calendar.startOfDay(for: now)) {
+            resetSelectionIfNeeded()
+        }
+    }
+
+    private func resetSelectionIfNeeded() {
+        if !range.contains(selectedDay, relativeTo: now, calendar: calendar) {
+            selectedDay = calendar.startOfDay(for: now)
         }
     }
 
     private var availableDates: DateInterval {
-        let today = calendar.startOfDay(for: .now)
-        let firstDay = range.startDate()
+        let today = calendar.startOfDay(for: now)
+        let firstDay = range.startDate(relativeTo: now, calendar: calendar)
             ?? calendar.dateInterval(of: .month, for: earliestDate)?.start
             ?? today
         let tomorrow = calendar.date(byAdding: .day, value: 1, to: today) ?? today.addingTimeInterval(86_400)

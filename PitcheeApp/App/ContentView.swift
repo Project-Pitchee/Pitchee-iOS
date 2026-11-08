@@ -84,6 +84,7 @@ private struct MainTabView: View {
     @State private var recordingModel = AnalysisViewModel()
     @State private var selectedTab: AppTab = .trends
     @State private var insightsRange: InsightsRange = .sevenDays
+    @State private var dashboardRanges = InsightsRange.allCases
     @State private var isDashboardVisible = false
     @State private var isInsightsBarMinimized = false
     @State private var monitorAccessoryState = MonitorAccessoryState()
@@ -123,6 +124,11 @@ private struct MainTabView: View {
             case .articles: _practicePath = State(initialValue: [.screenshotArticles])
             case .home, .history: break
             }
+        }
+        if ScreenshotMode.dashboardScenario != nil {
+            _selectedTab = State(initialValue: .trends)
+            _showsScreenshotHistory = State(initialValue: false)
+            _practicePath = State(initialValue: [])
         }
         #endif
     }
@@ -207,6 +213,7 @@ private struct MainTabView: View {
                 })
                 .modifier(InsightsRangeTabBarOverlay(
                     selection: $insightsRange,
+                    ranges: dashboardRanges,
                     isVisible: insightsPickerVisible,
                     isMinimized: isInsightsBarMinimized
                 ))
@@ -216,7 +223,7 @@ private struct MainTabView: View {
     @ViewBuilder
     private var accessory: some View {
         if insightsPickerVisible {
-            InsightsRangeTabBar(selection: $insightsRange)
+            InsightsRangeTabBar(selection: $insightsRange, ranges: dashboardRanges)
         } else if let model = activeMonitorModel {
             MonitorAccessoryContent(model: model, titleKey: monitorTitleKey) {
                 monitorAccessoryState.isExpanded = true
@@ -231,7 +238,7 @@ private struct MainTabView: View {
         TabView(selection: $selectedTab) {
             NavigationStack {
                 trendsRoot
-                    .safeAreaPadding(.bottom, usesLegacyTabBar ? 0 : 56)
+                    .safeAreaPadding(.bottom, usesLegacyTabBar || dashboardRanges.isEmpty ? 0 : 56)
                     .onAppear { isDashboardVisible = true }
                     .onDisappear { isDashboardVisible = false }
             }
@@ -294,7 +301,9 @@ private struct MainTabView: View {
 
     @ViewBuilder
     private var trendsRoot: some View {
-        TrendsView(range: $insightsRange, showsRangePicker: false)
+        TrendsView(range: $insightsRange, showsRangePicker: false) { ranges in
+            dashboardRanges = ranges
+        }
             #if DEBUG
             .navigationDestination(isPresented: $showsScreenshotHistory) {
                 RecordingHistoryView(range: .all, now: ScreenshotMode.now)
@@ -304,7 +313,7 @@ private struct MainTabView: View {
     }
 
     private var insightsPickerVisible: Bool {
-        selectedTab == .trends && isDashboardVisible
+        selectedTab == .trends && isDashboardVisible && !dashboardRanges.isEmpty
     }
 
     private var activeMonitorModel: MonitorViewModel? {

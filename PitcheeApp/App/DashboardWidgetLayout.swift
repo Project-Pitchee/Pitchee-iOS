@@ -12,6 +12,7 @@ import SwiftUI
 struct DashboardWidgetLayout: Layout {
     let minimumHeight: CGFloat
     let sizes: [DashboardComponentSize]
+    var summaryHeights: [CGFloat?] = []
     var spacing: CGFloat = 12
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
@@ -36,7 +37,8 @@ struct DashboardWidgetLayout: Layout {
             width: width, spacing: spacing, minimumHeight: minimumHeight,
             // reorderable() wraps each child and doesn't forward its layout
             // values. Supply the same ordered sizes used to build the cards.
-            sizes: subviews.indices.map { sizes.indices.contains($0) ? sizes[$0] : .small }
+            sizes: subviews.indices.map { sizes.indices.contains($0) ? sizes[$0] : .small },
+            summaryHeights: summaryHeights
         )
     }
 }

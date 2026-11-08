@@ -18,11 +18,14 @@ struct DashboardView: View {
     @Binding var range: InsightsRange
     let preference: VoicePreference
     var showsRangePicker = true
+    var availableRanges: [InsightsRange] = InsightsRange.allCases
 
     @AppStorage(AppStorageKey.themeSelection) private var savedTheme = AppThemeOption.twilt.rawValue
     @AppStorage(AppStorageKey.dashboardComponentOrder) private var savedOrder = DashboardConfiguration.defaultOrder
     @AppStorage(AppStorageKey.dashboardComponentSizes) private var savedSizes = "{}"
     @ScaledMetric(relativeTo: .body) private var minimumHeight: CGFloat = 174
+    @ScaledMetric(relativeTo: .body) private var singleRecordHeight: CGFloat = 124
+    @ScaledMetric(relativeTo: .body) private var fewRecordsHeight: CGFloat = 156
     @State private var isEditing = false
     @State private var isAdding = false
     @State private var pendingAddition: DashboardComponent?
@@ -46,8 +49,8 @@ struct DashboardView: View {
         ScrollViewReader { proxy in
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 16) {
-                    if showsRangePicker {
-                        InsightsRangePicker(selection: $range)
+                    if showsRangePicker && !availableRanges.isEmpty {
+                        InsightsRangePicker(selection: $range, ranges: availableRanges)
                     }
                     grid
                     if configuration.components.isEmpty || isEditing {
@@ -132,7 +135,11 @@ struct DashboardView: View {
     @ViewBuilder
     private var grid: some View {
         if #available(iOS 27.0, *), !usesLegacyReordering {
-            DashboardWidgetLayout(minimumHeight: minimumHeight, sizes: configuration.components.map { configuration.size(for: $0) }) {
+            DashboardWidgetLayout(
+                minimumHeight: minimumHeight,
+                sizes: configuration.components.map { configuration.size(for: $0) },
+                summaryHeights: summaryHeights
+            ) {
                 ForEach(configuration.components) { component in
                     cell(component)
                         .modifier(DashboardFlipSource(
@@ -151,7 +158,11 @@ struct DashboardView: View {
             ))
             .animation(animation, value: configuration)
         } else {
-            DashboardWidgetLayout(minimumHeight: minimumHeight, sizes: configuration.components.map { configuration.size(for: $0) }) {
+            DashboardWidgetLayout(
+                minimumHeight: minimumHeight,
+                sizes: configuration.components.map { configuration.size(for: $0) },
+                summaryHeights: summaryHeights
+            ) {
                 ForEach(configuration.components) { component in
                     DashboardLegacyDragSource(
                         identifier: component.rawValue,
@@ -175,6 +186,20 @@ struct DashboardView: View {
                 }
             }
             .animation(animation, value: configuration)
+        }
+    }
+
+    /// A temporary reading layout never overwrites a user's saved widget size.
+    private var summaryHeights: [CGFloat?] {
+        configuration.components.map { component in
+            guard !isEditing, !dynamicTypeSize.isAccessibilitySize,
+                  configuration.size(for: component) == .medium,
+                  configuration.sizes[component.rawValue] == nil else { return nil }
+            switch DashboardCard.summaryDayCount(for: component, snapshot: snapshot) {
+            case 1: return singleRecordHeight
+            case 2...3: return fewRecordsHeight
+            default: return nil
+            }
         }
     }
 

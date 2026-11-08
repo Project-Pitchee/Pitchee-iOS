@@ -18,12 +18,18 @@ struct TrendsView: View {
     @AppStorage(AppStorageKey.voicePreference) private var savedVoicePreference = ""
     @Binding var selectedRange: InsightsRange
     var showsRangePicker: Bool
+    var onAvailableRangesChange: ([InsightsRange]) -> Void
     @State private var now = Date.now
     @State private var previewHistory: [RecordingAssessment]?
 
-    init(range: Binding<InsightsRange>, showsRangePicker: Bool = true) {
+    init(
+        range: Binding<InsightsRange>,
+        showsRangePicker: Bool = true,
+        onAvailableRangesChange: @escaping ([InsightsRange]) -> Void = { _ in }
+    ) {
         _selectedRange = range
         self.showsRangePicker = showsRangePicker
+        self.onAvailableRangesChange = onAvailableRangesChange
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-dashboard-history-preview") {
             let calendar = Calendar.current
@@ -41,18 +47,38 @@ struct TrendsView: View {
     }
 
     var body: some View {
-        DashboardView(
+        let history = previewHistory ?? assessments
+        let configuration = DashboardRangeConfiguration(
+            assessments: history,
+            selection: selectedRange,
+            preference: voicePreference,
+            now: now
+        )
+        // The snapshot and the detail routes use the effective range immediately,
+        // including the first frame before the parent picker receives its options.
+        let effectiveRange = Binding(
+            get: { configuration.selection },
+            set: { selectedRange = $0 }
+        )
+        return DashboardView(
             snapshot: DashboardSnapshot(
-                assessments: previewHistory ?? assessments,
+                assessments: history,
                 openedDateKeys: openedDateKeys,
-                range: selectedRange,
+                range: configuration.selection,
                 preference: voicePreference,
                 now: now
             ),
-            range: $selectedRange,
+            range: effectiveRange,
             preference: voicePreference,
-            showsRangePicker: showsRangePicker
+            showsRangePicker: showsRangePicker,
+            availableRanges: configuration.ranges
         )
+        .onChange(of: configuration, initial: true) { _, configuration in
+            if selectedRange != configuration.selection {
+                selectedRange = configuration.selection
+            }
+            onAvailableRangesChange(configuration.ranges)
+        }
         .onAppear(perform: refreshDay)
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { refreshDay() }

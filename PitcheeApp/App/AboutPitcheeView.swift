@@ -188,9 +188,11 @@ struct AboutPitcheeView: View {
     }
 
     private var footer: some View {
-        Text(verbatim: "Pitchee \(AppVersion.current)")
+        Text(verbatim: "Pitchee \(AppVersion.current)｜Made with ❤️ by Ryo")
             .font(.caption)
             .foregroundStyle(palette.tertiary)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .center)
     }
 }

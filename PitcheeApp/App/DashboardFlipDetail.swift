@@ -114,13 +114,13 @@ struct DashboardFlipDetail: View {
         switch component {
         case .analysisCount:
             NavigationStack {
-                RecordingHistoryView(range: range)
+                RecordingHistoryView(range: range, now: snapshot.referenceDate)
                     .toolbar(.hidden, for: .navigationBar)
             }
-        case .openedDays: InsightsActivityView(range: range)
-        case .compositeScore: InsightsMetricDetailView(metric: .composite, range: range)
-        case .naturalness: InsightsMetricDetailView(metric: .naturalness, range: range)
-        case .meanPitch: InsightsMetricDetailView(metric: .pitch, range: range)
+        case .openedDays: InsightsActivityView(range: range, now: snapshot.referenceDate)
+        case .compositeScore: InsightsMetricDetailView(metric: .composite, range: range, now: snapshot.referenceDate)
+        case .naturalness: InsightsMetricDetailView(metric: .naturalness, range: range, now: snapshot.referenceDate)
+        case .meanPitch: InsightsMetricDetailView(metric: .pitch, range: range, now: snapshot.referenceDate)
         }
     }
 

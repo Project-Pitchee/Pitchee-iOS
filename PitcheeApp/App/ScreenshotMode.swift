@@ -11,10 +11,38 @@ enum ScreenshotMode {
         case home, monitor, insights, articles, history
     }
 
+    enum DashboardScenario: String, CaseIterable {
+        case single, few, four, fortnight, twoMonths, long, gap, filteredSingle
+
+        var dayOffsets: [Int] {
+            switch self {
+            case .single: [0]
+            case .few: [57, 36, 0]
+            case .four: [3, 2, 1, 0]
+            case .fortnight: Array((0..<14).reversed())
+            case .twoMonths: Array(stride(from: 59, through: 0, by: -2)) + [0]
+            case .long: Array(stride(from: 179, through: 0, by: -2)) + [0]
+            case .gap: [100, 50, 36, 5, 0]
+            case .filteredSingle: [45, 25, 14, 0]
+            }
+        }
+    }
+
     static let isEnabled = ProcessInfo.processInfo.arguments.contains("-UITestMode")
     static let now = Date(timeIntervalSince1970: 1_793_534_400) // 2026-11-01 12:00 UTC
+    static let dashboardScenario: DashboardScenario? = {
+        guard isEnabled else { return nil }
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: "-DashboardScenario") else { return nil }
+        guard arguments.indices.contains(index + 1),
+              let scenario = DashboardScenario(rawValue: arguments[index + 1]) else {
+            preconditionFailure("-DashboardScenario requires a valid dashboard scenario")
+        }
+        return scenario
+    }()
     static let screen: Screen? = {
         guard isEnabled else { return nil }
+        if dashboardScenario != nil { return .home }
         let arguments = ProcessInfo.processInfo.arguments
         guard let index = arguments.firstIndex(of: "-ScreenshotScreen"),
               arguments.indices.contains(index + 1),
@@ -31,8 +59,19 @@ enum ScreenshotMode {
         defaults.set(OnboardingFlow.currentVersion, forKey: AppStorageKey.onboardingCompletedVersion)
         defaults.set(VoicePreference.feminine.rawValue, forKey: AppStorageKey.voicePreference)
         defaults.set(AppThemeOption.twilt.rawValue, forKey: AppStorageKey.themeSelection)
-        defaults.set((26...31).map { "2026-10-\($0)" }.joined(separator: ",") + ",2026-11-1",
-                     forKey: AppStorageKey.openedDateKeys)
+        if let dashboardScenario {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+            let keys = dashboardScenario.dayOffsets.map { offset in
+                let date = now.addingTimeInterval(-Double(offset) * 86_400)
+                let parts = calendar.dateComponents([.year, .month, .day], from: date)
+                return "\(parts.year!)-\(parts.month!)-\(parts.day!)"
+            }
+            defaults.set(keys.joined(separator: ","), forKey: AppStorageKey.openedDateKeys)
+        } else {
+            defaults.set((26...31).map { "2026-10-\($0)" }.joined(separator: ",") + ",2026-11-1",
+                         forKey: AppStorageKey.openedDateKeys)
+        }
         return defaults
     }()
 
@@ -45,22 +84,43 @@ enum ScreenshotMode {
             for: RecordingAssessment.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         )
-        // Fixed IDs, dates and measurements: no random generator or wall clock.
-        // Two short exercises per day illustrate a week of practice, including variation.
-        for index in 0..<14 {
-            let result = DebugPreviewData.history[min(index / 5, DebugPreviewData.history.count - 1)]
-            let assessment = try RecordingAssessment(
-                id: UUID(uuidString: String(format: "00000000-0000-0000-0000-%012d", index + 1))!,
-                recordedAt: now.addingTimeInterval(-Double(6 - index / 2) * 86_400 - Double(index % 2) * 1_800),
-                result: result,
-                preference: .feminine,
-                quality: RecordingQuality(speechSeconds: 10, speechDBFS: -27,
-                                          backgroundDBFS: -40, clippedFraction: 0)
-            )
-            container.mainContext.insert(assessment)
+        if let dashboardScenario {
+            for (index, offset) in dashboardScenario.dayOffsets.enumerated() {
+                try insertRecording(
+                    index: index,
+                    recordedAt: now.addingTimeInterval(-Double(offset) * 86_400),
+                    result: DebugPreviewData.history[index % DebugPreviewData.history.count],
+                    into: container
+                )
+            }
+        } else {
+            // Fixed IDs, dates and measurements: no random generator or wall clock.
+            // Two short exercises per day illustrate a week of practice, including variation.
+            for index in 0..<14 {
+                try insertRecording(
+                    index: index,
+                    recordedAt: now.addingTimeInterval(-Double(6 - index / 2) * 86_400 - Double(index % 2) * 1_800),
+                    result: DebugPreviewData.history[min(index / 5, DebugPreviewData.history.count - 1)],
+                    into: container
+                )
+            }
         }
         try container.mainContext.save()
         return container
+    }
+
+    private static func insertRecording(
+        index: Int, recordedAt: Date, result: PitcheeAnalysisResult, into container: ModelContainer
+    ) throws {
+        let assessment = try RecordingAssessment(
+            id: UUID(uuidString: String(format: "00000000-0000-0000-0000-%012d", index + 1))!,
+            recordedAt: recordedAt,
+            result: result,
+            preference: .feminine,
+            quality: RecordingQuality(speechSeconds: 10, speechDBFS: -27,
+                                      backgroundDBFS: -40, clippedFraction: 0)
+        )
+        container.mainContext.insert(assessment)
     }
 }
 

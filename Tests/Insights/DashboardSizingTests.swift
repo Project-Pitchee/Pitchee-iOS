@@ -37,6 +37,24 @@ enum DashboardSizingTests {
         check(DashboardWidgetMetrics(width: 362, spacing: 12, minimumHeight: 174, sizes: []).height == 0,
               "Empty dashboards don't have a negative height")
 
+        let summary = DashboardWidgetMetrics(
+            width: 362, spacing: 12, minimumHeight: 174,
+            sizes: [.small, .medium, .small, .small, .large],
+            summaryHeights: [124, 124, 124, 124, 124]
+        )
+        check(summary.frames.map(\.height) == [175, 124, 175, 175, 362],
+              "Reading summaries compact only wide cards, preserving small and large widget geometry")
+        check(summary.frames[1].minY == 187 && summary.frames[2].minY == 323
+              && summary.frames[3].minY == 323 && summary.frames[4].minY == 510
+              && summary.height == 872,
+              "Mixed summary and standard rows remain aligned without overlap or trailing gaps")
+        let invalidSummary = DashboardWidgetMetrics(
+            width: 362, spacing: 12, minimumHeight: 174,
+            sizes: [.medium, .medium, .medium, .medium], summaryHeights: [.nan, -1, .infinity]
+        )
+        check(invalidSummary.frames.allSatisfy { $0.height == 175 },
+              "Invalid or missing summary heights preserve the standard widget layout")
+
         let sizes: [String: DashboardComponentSize] = ["pitch": .large, "naturalness": .small]
         check(DashboardComponentSizes.decode(DashboardComponentSizes.encode(sizes)) == sizes, "Sizes survive persistence")
         check(DashboardComponentSizes.decode("invalid").isEmpty, "Malformed saved sizes fall back to defaults")

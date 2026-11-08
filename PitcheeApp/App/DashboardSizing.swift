@@ -55,7 +55,10 @@ struct DashboardWidgetMetrics {
     let frames: [CGRect]
     let height: CGFloat
 
-    init(width: CGFloat, spacing: CGFloat, minimumHeight: CGFloat, sizes: [DashboardComponentSize]) {
+    init(
+        width: CGFloat, spacing: CGFloat, minimumHeight: CGFloat,
+        sizes: [DashboardComponentSize], summaryHeights: [CGFloat?] = []
+    ) {
         let width = max(0, width)
         let columnWidth = max(0, (width - spacing) / 2)
         let unitHeight = max(columnWidth, minimumHeight)
@@ -63,7 +66,7 @@ struct DashboardWidgetMetrics {
         var y: CGFloat = 0
         var pendingSmall = false
 
-        for size in sizes {
+        for (index, size) in sizes.enumerated() {
             if size == .small {
                 frames.append(CGRect(
                     x: pendingSmall ? columnWidth + spacing : 0,
@@ -78,7 +81,9 @@ struct DashboardWidgetMetrics {
                     y += unitHeight + spacing
                     pendingSmall = false
                 }
-                let height = size == .large ? unitHeight * 2 + spacing : unitHeight
+                let summaryHeight = summaryHeights.indices.contains(index) ? summaryHeights[index] : nil
+                let mediumHeight = summaryHeight.flatMap { $0.isFinite && $0 > 0 ? $0 : nil } ?? unitHeight
+                let height = size == .large ? unitHeight * 2 + spacing : mediumHeight
                 frames.append(CGRect(x: 0, y: y, width: width, height: height))
                 y += height + spacing
             }

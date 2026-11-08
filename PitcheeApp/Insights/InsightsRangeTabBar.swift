@@ -3,17 +3,18 @@ import SwiftUI
 /// The native segmented control and glass treatment used in Kavsoft's PhotosTB example.
 struct InsightsRangeTabBar: View {
     @Binding var selection: InsightsRange
+    var ranges: [InsightsRange] = InsightsRange.allCases
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     var body: some View {
         if #available(iOS 26.0, *) {
-            InsightsRangePicker(selection: $selection)
+            InsightsRangePicker(selection: $selection, ranges: ranges)
                 .labelsHidden()
                 .controlSize(horizontalSizeClass == .regular ? .regular : .large)
                 .glassEffect(.regular, in: .capsule)
                 .accessibilityIdentifier("insights.range.bottom")
         } else {
-            InsightsRangePicker(selection: $selection)
+            InsightsRangePicker(selection: $selection, ranges: ranges)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .accessibilityIdentifier("insights.range.bottom")
@@ -24,6 +25,7 @@ struct InsightsRangeTabBar: View {
 /// Keeps the picker outside the system accessory so it has just one glass surface.
 struct InsightsRangeTabBarOverlay: ViewModifier {
     @Binding var selection: InsightsRange
+    var ranges: [InsightsRange] = InsightsRange.allCases
     let isVisible: Bool
     let isMinimized: Bool
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -39,7 +41,7 @@ struct InsightsRangeTabBarOverlay: ViewModifier {
         content
             .overlay(alignment: .bottom) {
                 if isVisible {
-                    InsightsRangeTabBar(selection: $selection)
+                    InsightsRangeTabBar(selection: $selection, ranges: ranges)
                         .frame(maxWidth: 560)
                         .padding(.leading, isMinimized ? 90 : 20)
                         .padding(.trailing, 20)
