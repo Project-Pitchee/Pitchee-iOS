@@ -2,7 +2,7 @@
 // Xcode Cloud's pre-build hook copies CI_TAG and CI_BUILD_NUMBER here in its
 // temporary checkout. It never allocates or increments a build number.
 MARKETING_VERSION = 1.0
-CURRENT_PROJECT_VERSION = 1
+CURRENT_PROJECT_VERSION = 2
 VERSIONING_SYSTEM = apple-generic
 
 // Keep generated Info.plist values tied to the same effective build settings.
