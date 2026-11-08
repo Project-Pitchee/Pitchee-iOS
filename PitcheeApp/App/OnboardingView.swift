@@ -237,6 +237,7 @@ struct OnboardingView: View {
                     .padding(.vertical, 6)
             }
             .modifier(LiquidGlassProminentButtonStyleModifier())
+            .tint(Color(red: 0.10, green: 0.27, blue: 0.83))
             .buttonBorderShape(.capsule)
             .controlSize(.large)
             .disabled(page == .preferences && selectedVoice == nil)

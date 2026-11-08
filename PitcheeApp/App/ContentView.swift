@@ -355,7 +355,8 @@ private struct PianoKeysView: View {
                 .frame(maxWidth: 720)
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 20)
-                .padding(.vertical, 24)
+                .padding(.top, 24)
+                .padding(.bottom, 120)
                 .environment(\.layoutDirection, .leftToRight)
         }
         .background {
@@ -469,7 +470,7 @@ private struct PianoNoteButton: View {
 
             Text(note.frequency.formatted(.number.precision(.fractionLength(1))) + " " + String(localized: "common.unit.hertz"))
                 .font(.system(size: 12, weight: .medium, design: .monospaced))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary.opacity(0.7))
         }
         .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
         .padding(.horizontal, 16)

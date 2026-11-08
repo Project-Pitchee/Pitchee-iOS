@@ -18,7 +18,7 @@ enum GradientAppearance: String, CaseIterable, Identifiable {
 
 /// Gradient families used by the page-refactor explorations.
 enum PageGradientStyle: String, CaseIterable, Identifiable {
-    /// Concept gradient: Twilt (light) ↔ Dawn (dark).
+    /// Concept gradient: Daybreak (light) ↔ Dawn (dark).
     case twiltDawn
     /// Pink gradient: Blush (light) ↔ Rose (dark).
     case blushRose
@@ -31,7 +31,7 @@ enum PageGradientStyle: String, CaseIterable, Identifiable {
 
     var lightName: String {
         switch self {
-        case .twiltDawn: "Twilt"
+        case .twiltDawn: "Daybreak"
         case .blushRose: "Blush"
         case .noonMidnight: "Noon"
         case .twilightDusk: "Twilight"
