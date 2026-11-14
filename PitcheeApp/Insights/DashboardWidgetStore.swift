@@ -11,7 +11,7 @@ nonisolated struct DashboardWidgetState: Codable, Equatable, Sendable {
 }
 
 nonisolated enum DashboardWidgetStore {
-    static let groupIdentifier = "group.com.rolvy.Pitchee"
+    static let groupIdentifier = "group.com.rolvy.Pitchee.963SN9ZCQ5"
     private static let logger = Logger(subsystem: "com.rolvy.Pitchee", category: "Widgets")
 
     static var sharedURL: URL? {
