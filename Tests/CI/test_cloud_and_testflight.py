@@ -51,7 +51,7 @@ class FakeClient:
 class CloudVersionTests(unittest.TestCase):
     def fixture(self, directory):
         root = Path(directory)
-        for relative in ('Config/Version.xcconfig', 'Pitchee.xcodeproj/project.pbxproj'):
+        for relative in ('Config/Version.xcconfig', 'Pitchee.xcodeproj/project.pbxproj', 'Widgets/Info.plist'):
             target = root / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / relative, target)

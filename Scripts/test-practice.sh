@@ -9,6 +9,7 @@ trap 'rm -rf "$test_directory"' EXIT HUP INT TERM
 xcrun swiftc -parse-as-library -swift-version 5 -target "$(uname -m)-apple-macosx14.0" \
     "$project_directory/PitcheeApp/Interop/Core/AnalysisResult.swift" \
     -I "$core_scoring_module_directory" "$core_scoring_object" -lc++ \
+    "$project_directory/PitcheeApp/Analysis/VoicePreference.swift" \
     "$project_directory/PitcheeApp/Analysis/VoiceScoring.swift" \
     "$project_directory/PitcheeApp/Practice/PracticeData.swift" \
     "$project_directory/PitcheeApp/Analysis/RecordingAssessment.swift" \
@@ -28,6 +29,7 @@ xcrun swiftc -parse-as-library -swift-version 5 -module-name PracticeMigrationTe
     -target "$(uname -m)-apple-macosx14.0" \
     "$project_directory/PitcheeApp/Interop/Core/AnalysisResult.swift" \
     -I "$core_scoring_module_directory" "$core_scoring_object" -lc++ \
+    "$project_directory/PitcheeApp/Analysis/VoicePreference.swift" \
     "$project_directory/PitcheeApp/Analysis/VoiceScoring.swift" \
     "$project_directory/PitcheeApp/Practice/PracticeData.swift" \
     "$project_directory/PitcheeApp/Analysis/RecordingAssessment.swift" \

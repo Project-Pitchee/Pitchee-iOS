@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capture exactly five named XCUITest attachments on an isolated simulator."""
+"""Capture exactly four named XCUITest attachments on an isolated simulator."""
 import argparse
 from contextlib import nullcontext
 import json
@@ -13,7 +13,7 @@ import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-SCREENS = ["01-home", "02-monitor", "03-insights", "04-articles", "05-history"]
+SCREENS = ["01-home", "02-monitor", "03-insights", "04-articles"]
 DEVICES = {"6.9": ["iPhone 17 Pro Max", "iPhone 16 Pro Max", "iPhone 18 Pro Max"],
            "6.5": ["iPhone 11 Pro Max", "iPhone Xs Max"]}
 DIMENSIONS = {"6.9": {(1320, 2868)}, "6.5": {(1242, 2688)}}
@@ -42,7 +42,7 @@ def environment_unavailable(message, destination):
 
 
 def export_images(attachments, destination, device):
-    """Only our five named attachments count; incidental test screenshots cannot mask failure."""
+    """Only our four named attachments count; incidental test screenshots cannot mask failure."""
     records = json.loads((attachments / "manifest.json").read_text())
     found = {}
     for test in records:
@@ -131,7 +131,7 @@ def main():
             run("xcrun", "xcresulttool", "export", "attachments", "--path", str(result),
                 "--output-path", str(attachments))
             export_images(attachments, destination, args.device)
-        print(f"Exported five {args.device}-inch / {args.language} / {args.appearance} screenshots to {destination}")
+        print(f"Exported four {args.device}-inch / {args.language} / {args.appearance} screenshots to {destination}")
     finally:
         subprocess.run(["xcrun", "simctl", "shutdown", simulator], capture_output=True)
         subprocess.run(["xcrun", "simctl", "delete", simulator], capture_output=True)

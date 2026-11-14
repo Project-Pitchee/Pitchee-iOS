@@ -113,6 +113,7 @@ xcrun swiftc -parse-as-library -swift-version 5 \
     -target "$(uname -m)-apple-macosx14.0" \
     -I "$core_scoring_module_directory" "$core_scoring_object" -lc++ \
     PitcheeApp/Interop/Core/AnalysisResult.swift \
+    PitcheeApp/Analysis/VoicePreference.swift \
     PitcheeApp/Analysis/VoiceScoring.swift \
     PitcheeApp/Analysis/RecordingStatistics.swift \
     PitcheeApp/Practice/PracticeData.swift \

@@ -6,7 +6,7 @@ final class PitcheeScreenshots: XCTestCase {
 
     func testScreenshots() throws {
         let language = Locale.preferredLanguages.first ?? "en"
-        let screens = ["home", "monitor", "insights", "articles", "history"]
+        let screens = ["home", "monitor", "insights", "articles"]
         for (index, screen) in screens.enumerated() {
             let app = XCUIApplication()
             app.launchArguments = [
@@ -24,7 +24,6 @@ final class PitcheeScreenshots: XCTestCase {
             case "home": XCTAssertTrue(app.buttons["practice.openScoring"].exists)
             case "monitor": XCTAssertTrue(app.descendants(matching: .any)["monitor.frequency"].exists)
             case "articles": XCTAssertTrue(app.buttons["voiceLibrary.categoryFilter"].exists)
-            case "history": XCTAssertGreaterThan(app.buttons.count, 3, "Seeded history must contain recording links")
             default: XCTAssertTrue(app.scrollViews.firstMatch.exists, "Result must render its content")
             }
             let attachment = XCTAttachment(screenshot: app.screenshot())
@@ -36,7 +35,7 @@ final class PitcheeScreenshots: XCTestCase {
     }
 }
 
-/// Kept outside PitcheeScreenshots so the five-screen export does not rerun it.
+/// Kept outside PitcheeScreenshots so the four-screen export does not rerun it.
 @MainActor
 final class PitcheeAboutTests: XCTestCase {
     func testAboutShowsBuiltMarketingVersionAndBuildNumber() throws {

@@ -27,6 +27,7 @@ nonisolated final class PianoToneRenderer: @unchecked Sendable {
         var held = false
         var oneShot = false
         let increment: Double
+        let amplitude: Double
 
         mutating func ramp(to value: Double, frames: Int) {
             rampStart = gain
@@ -50,7 +51,10 @@ nonisolated final class PianoToneRenderer: @unchecked Sendable {
         minimumFrames = max(1, Int(sampleRate * 0.025))
         oneShotFrames = max(1, Int(sampleRate * 0.6))
         voices = (42...65).map { midi in
-            Voice(increment: 2 * .pi * 440 * pow(2, Double(midi - 69) / 12) / sampleRate)
+            let frequency = 440 * pow(2, Double(midi - 69) / 12)
+            // shortcut: gentle low-note loudness compensation, calibrate by listening if imbalance remains.
+            return Voice(increment: 2 * .pi * frequency / sampleRate,
+                         amplitude: 0.55 * sqrt(220 / frequency))
         }
     }
 
@@ -104,7 +108,7 @@ nonisolated final class PianoToneRenderer: @unchecked Sendable {
                 }
                 let phase = voices[index].phase
                 mixed += (sin(phase) + 0.22 * sin(2 * phase) + 0.08 * sin(3 * phase))
-                    * voices[index].gain * 0.32
+                    * voices[index].gain * voices[index].amplitude
                 voices[index].phase += voices[index].increment
                 if voices[index].phase >= 2 * .pi { voices[index].phase -= 2 * .pi }
                 voices[index].age += 1

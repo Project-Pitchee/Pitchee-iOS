@@ -56,6 +56,7 @@ struct InsightsRangeTabBarOverlay: ViewModifier {
 struct InsightsTabBarMinimization: ViewModifier {
     let isEnabled: Bool
     @Binding var isMinimized: Bool
+    @Binding var isBottomBar: Bool
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
 
@@ -67,7 +68,7 @@ struct InsightsTabBarMinimization: ViewModifier {
         if #available(iOS 26.0, *) {
             content
                 .background {
-                    InsightsTabBarObserver(isMinimized: $isMinimized)
+                    InsightsTabBarObserver(isMinimized: $isMinimized, isBottomBar: $isBottomBar)
                         .id(minimizes)
                 }
                 .compositingGroup()

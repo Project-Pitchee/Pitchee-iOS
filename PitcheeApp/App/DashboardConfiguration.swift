@@ -40,6 +40,13 @@ enum DashboardComponent: String, CaseIterable, Identifiable, Hashable, Sendable 
         self == .compositeScore ? .medium : .small
     }
 
+    var supportsDetail: Bool {
+        switch self {
+        case .compositeScore, .naturalness, .meanPitch: true
+        case .analysisCount, .openedDays: false
+        }
+    }
+
     var supportsResizing: Bool {
         switch self {
         case .compositeScore, .naturalness, .meanPitch: true

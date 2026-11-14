@@ -69,6 +69,7 @@ struct DashboardFlipDetail: View {
                 ))
                 .allowsHitTesting(isReady)
                 .accessibilityHidden(!isReady)
+                .accessibilityElement(children: .contain)
                 .accessibilityAction(.escape, close)
             }
         }
@@ -94,15 +95,17 @@ struct DashboardFlipDetail: View {
             .foregroundStyle(palette.primaryText)
             .accessibilityAddTraits(.isHeader)
             Spacer(minLength: 0)
-            Button("common.action.close", systemImage: "xmark", action: close)
-                .labelStyle(.iconOnly)
-                .font(.body.weight(.semibold))
-                .foregroundStyle(palette.secondaryText)
-                .frame(width: 44, height: 44)
-                .contentShape(Rectangle())
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("dashboard.detail.close")
-                .disabled(!isReady)
+            Button(action: close) {
+                Label("common.action.close", systemImage: "xmark")
+                    .labelStyle(.iconOnly)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(palette.secondaryText)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("dashboard.detail.close")
+            .disabled(!isReady)
         }
         .padding(.leading, 20)
         .padding(.trailing, 8)
@@ -112,11 +115,7 @@ struct DashboardFlipDetail: View {
     @ViewBuilder
     private var detail: some View {
         switch component {
-        case .analysisCount:
-            NavigationStack {
-                RecordingHistoryView(range: range, now: snapshot.referenceDate)
-                    .toolbar(.hidden, for: .navigationBar)
-            }
+        case .analysisCount: EmptyView()
         case .openedDays: InsightsActivityView(range: range, now: snapshot.referenceDate)
         case .compositeScore: InsightsMetricDetailView(metric: .composite, range: range, now: snapshot.referenceDate)
         case .naturalness: InsightsMetricDetailView(metric: .naturalness, range: range, now: snapshot.referenceDate)
@@ -156,7 +155,6 @@ private struct DashboardFlipFace: AnimatableModifier {
         content
             .frame(width: frame.width, height: frame.height)
             .clipShape(RoundedRectangle(cornerRadius: 20 + 8 * flip.progress))
-            .contentShape(RoundedRectangle(cornerRadius: 20 + 8 * flip.progress))
             .rotation3DEffect(
                 .degrees(reduceMotion ? 0 : (isFront ? flip.frontAngle : flip.backAngle)),
                 axis: (x: 0, y: 1, z: 0), perspective: 0.3

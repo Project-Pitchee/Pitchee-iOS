@@ -15,7 +15,8 @@ private struct LiquidGlassModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-        if #available(iOS 26.0, *) {
+        // shortcut: WidgetKit drops glassEffect content; use material until its remote renderer supports glass.
+        if #available(iOS 26.0, *), Bundle.main.bundleURL.pathExtension != "appex" {
             let effect = interactive
                 ? Glass.regular.tint(tint).interactive()
                 : Glass.regular.tint(tint)

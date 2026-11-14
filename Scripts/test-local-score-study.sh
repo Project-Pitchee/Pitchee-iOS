@@ -12,6 +12,7 @@ xcrun swiftc -parse-as-library -swift-version 5 \
     -target "$(uname -m)-apple-macosx14.0" \
     "$project_directory/PitcheeApp/Interop/Core/AnalysisResult.swift" \
     -I "$core_scoring_module_directory" "$core_scoring_object" -lc++ \
+    "$project_directory/PitcheeApp/Analysis/VoicePreference.swift" \
     "$project_directory/PitcheeApp/Analysis/VoiceScoring.swift" \
     "$project_directory/PitcheeApp/Diagnostics/LocalDiagnostics.swift" \
     "$project_directory/PitcheeApp/App/PrivateAppStorage.swift" \

@@ -187,6 +187,7 @@ enum DashboardSnapshotTests {
         let longHistory = try records(daysAgo: Array(stride(from: 0, to: 180, by: 2)))
         let interruptedHistory = try records(daysAgo: [0, 5, 37, 57, 83])
         let filteredSingleHistory = try records(daysAgo: [0, 14, 29, 38])
+        let emptyWeekHistory = try records(daysAgo: [7, 14, 38, 57])
         let scenarios: [(name: String, records: [RecordingAssessment], ranges: [InsightsRange],
                          requested: InsightsRange, effective: InsightsRange)] = [
             ("One recorded day", oneDay, [], .sevenDays, .all),
@@ -197,7 +198,9 @@ enum DashboardSnapshotTests {
             ("More than three months", longHistory, InsightsRange.allCases, .all, .all),
             ("Interrupted history", interruptedHistory, [.sevenDays, .all], .thirtyDays, .sevenDays),
             ("A selected range with one day", filteredSingleHistory,
-             [.sevenDays, .thirtyDays, .all], .sevenDays, .sevenDays)
+             [.sevenDays, .thirtyDays, .all], .sevenDays, .sevenDays),
+            ("An empty week with older history", emptyWeekHistory,
+             InsightsRange.allCases, .sevenDays, .sevenDays)
         ]
         for scenario in scenarios {
             let config = configuration(scenario.records, selection: scenario.requested)
@@ -210,6 +213,17 @@ enum DashboardSnapshotTests {
                                                    relativeTo: rangeNow, calendar: calendar)
             check(display.assessmentCount == expected.count,
                   "\(scenario.name) applies the resolved range to displayed recording counts")
+            for selection in InsightsRange.allCases {
+                let selected = configuration(scenario.records, selection: selection)
+                check(selected.ranges == config.ranges,
+                      "\(scenario.name) keeps the same picker options when switching ranges")
+                if config.ranges.contains(selection) {
+                    check(selected.selection == selection,
+                          "\(scenario.name) never replaces an available selection")
+                }
+                check(configuration(scenario.records, selection: selected.selection) == selected,
+                      "\(scenario.name) resolves selection without a second change to the picker")
+            }
         }
 
         let selectedSingle = configuration(filteredSingleHistory, selection: .sevenDays)
@@ -260,15 +274,21 @@ enum DashboardSnapshotTests {
             let futureOnly = configuration([tomorrow], selection: selection)
             check(futureOnly == emptyConfiguration, "Future-only history uses the unchanged empty state")
         }
-        let previousHistory = try records(daysAgo: [57, 65, 72, 80])
-        for selection in [InsightsRange.sevenDays, .thirtyDays] {
-            let noRecent = configuration(previousHistory, selection: selection)
-            check(noRecent.ranges == InsightsRange.allCases && noRecent.selection == selection,
-                  "An established user's selected empty period keeps the original picker")
-            let noRecentSnapshot = snapshot(previousHistory, range: noRecent.selection, relativeTo: rangeNow)
-            check(noRecentSnapshot.assessmentCount == 0 && noRecentSnapshot.recordDayCount == 0
-                  && noRecentSnapshot.latestDate == nil,
-                  "A selected empty period does not substitute older results")
+        for offsets in [[7, 14, 38, 57], [57, 65, 72, 80], [90, 100, 110, 120]] {
+            let previousHistory = try records(daysAgo: offsets)
+            for selection in InsightsRange.allCases {
+                let noRecent = configuration(previousHistory, selection: selection)
+                check(noRecent.ranges == InsightsRange.allCases && noRecent.selection == selection,
+                      "Empty and populated periods keep the same picker and requested range")
+                let noRecentSnapshot = snapshot(previousHistory, range: noRecent.selection, relativeTo: rangeNow)
+                let expectedCount = InsightsData.assessments(previousHistory, in: selection,
+                    relativeTo: rangeNow, calendar: calendar).count
+                check(noRecentSnapshot.assessmentCount == expectedCount
+                      && noRecentSnapshot.recordDayCount == expectedCount,
+                      "Switching ranges still filters the records without substituting older results")
+                check((noRecentSnapshot.latestDate == nil) == (expectedCount == 0),
+                      "An empty period stays empty while populated periods retain their latest result")
+            }
         }
         let sparseWeekly = snapshot(sparseDays, range: .sevenDays, relativeTo: rangeNow)
         check(sparseWeekly.assessmentCount == 1 && sparseWeekly.recordDayCount == 1,
@@ -277,6 +297,35 @@ enum DashboardSnapshotTests {
                                 relativeTo: rangeNow)
         check(sparseAll.recordDayCount == 3 && sparseAll.assessmentCount == 3,
               "The caller explicitly passes the all-history selection when the picker is hidden")
+
+        let widgetDirectory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let widgetURL = widgetDirectory.appendingPathComponent("Dashboard/snapshot.json")
+        defer { try? FileManager.default.removeItem(at: widgetDirectory) }
+        check(DashboardWidgetStore.load(from: widgetURL) == .empty,
+              "A widget without shared data has the homepage's empty presentation")
+        let widgetState = DashboardWidgetState(snapshot: weekly, preference: .feminine, theme: "blush")
+        check(DashboardWidgetStore.save(widgetState, to: widgetURL), "The app writes its display snapshot")
+        check(DashboardWidgetStore.load(from: widgetURL) == widgetState,
+              "Widget sharing preserves every count, reading, baseline, chart point, date, preference and theme")
+        check(!DashboardWidgetStore.save(widgetState, to: widgetURL),
+              "Unchanged widget content does not write or request another timeline")
+        let changedWidgetState = DashboardWidgetState(snapshot: weekly, preference: .masculine, theme: "noon")
+        check(DashboardWidgetStore.save(changedWidgetState, to: widgetURL)
+              && DashboardWidgetStore.load(from: widgetURL) == changedWidgetState,
+              "Changes to voice preference and theme propagate without a new recording")
+        check(DashboardWidgetStore.save(.empty, to: widgetURL)
+              && DashboardWidgetStore.load(from: widgetURL) == .empty,
+              "An empty homepage replaces old widget readings")
+        try Data("{\"snapshot\":".utf8).write(to: widgetURL)
+        check(DashboardWidgetStore.load(from: widgetURL) == .empty,
+              "Truncated or incompatible shared data falls back to the empty presentation")
+        check(DashboardWidgetStore.save(widgetState, to: widgetURL),
+              "A new app snapshot repairs an unreadable shared file")
+        check(!DashboardWidgetStore.save(changedWidgetState, to: widgetURL.appendingPathComponent("unwritable.json"))
+              && DashboardWidgetStore.load(from: widgetURL) == widgetState,
+              "A failed write preserves existing shared data")
+        check(!DashboardWidgetStore.save(widgetState, to: nil),
+              "A missing App Group is reported as a failed write")
         print("Dashboard snapshots: \(checks) checks passed")
     }
 }

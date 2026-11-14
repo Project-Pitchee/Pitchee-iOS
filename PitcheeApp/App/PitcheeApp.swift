@@ -26,8 +26,10 @@ struct PitcheeApp: App {
             try PrivateAppStorage.prepare(libraryDirectory: library)
             try PrivateAppStorage.removeAbandonedRecordings(in: FileManager.default.temporaryDirectory)
             AppStorageMigration.run()
-            // Keep SwiftData's existing default URL so no history migration is needed.
-            let configuration = ModelConfiguration(schema: Schema([RecordingAssessment.self]), cloudKitDatabase: .none)
+            // App Groups are only for widget snapshots; keep the existing private history store.
+            let configuration = ModelConfiguration(
+                schema: Schema([RecordingAssessment.self]), groupContainer: .none, cloudKitDatabase: .none
+            )
             container = try ModelContainer(for: RecordingAssessment.self, configurations: configuration)
         } catch {
             container = nil

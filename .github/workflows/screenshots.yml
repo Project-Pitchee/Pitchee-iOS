@@ -55,7 +55,7 @@ jobs:
           persist-credentials: false
       - name: Restore native dependencies
         run: bash Scripts/bootstrap-native-dependencies.sh
-      - name: Capture five screens
+      - name: Capture four screens
         env:
           DEVICE: ${{ matrix.device }}
           LANGUAGE: ${{ matrix.language }}

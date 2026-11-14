@@ -109,7 +109,7 @@ enum InsightsMetric: String, CaseIterable, Identifiable {
 }
 
 enum InsightsDestination: Hashable {
-    case history, activity, metric(InsightsMetric)
+    case activity, metric(InsightsMetric)
 }
 
 enum InsightsData {

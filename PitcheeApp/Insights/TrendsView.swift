@@ -57,7 +57,7 @@ struct TrendsView: View {
         // The snapshot and the detail routes use the effective range immediately,
         // including the first frame before the parent picker receives its options.
         let effectiveRange = Binding(
-            get: { configuration.selection },
+            get: { configuration.ranges.contains(selectedRange) ? selectedRange : configuration.selection },
             set: { selectedRange = $0 }
         )
         return DashboardView(
@@ -73,11 +73,11 @@ struct TrendsView: View {
             showsRangePicker: showsRangePicker,
             availableRanges: configuration.ranges
         )
-        .onChange(of: configuration, initial: true) { _, configuration in
-            if selectedRange != configuration.selection {
+        .onChange(of: configuration.ranges, initial: true) { _, ranges in
+            if !ranges.contains(selectedRange) && selectedRange != configuration.selection {
                 selectedRange = configuration.selection
             }
-            onAvailableRangesChange(configuration.ranges)
+            onAvailableRangesChange(ranges)
         }
         .onAppear(perform: refreshDay)
         .onChange(of: scenePhase) { _, phase in

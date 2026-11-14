@@ -4,8 +4,9 @@ import UIKit
 // Adapted from Kavsoft's PhotosTB.zip: PhotosTB/PhotosTB/Helpers/TabBarMinimizeHelper.swift.
 struct InsightsTabBarObserver: UIViewRepresentable {
     @Binding var isMinimized: Bool
+    @Binding var isBottomBar: Bool
 
-    func makeCoordinator() -> Coordinator { Coordinator(selection: $isMinimized) }
+    func makeCoordinator() -> Coordinator { Coordinator(selection: $isMinimized, isBottomBar: $isBottomBar) }
 
     func makeUIView(context: Context) -> ProbeView {
         let view = ProbeView()
@@ -19,6 +20,7 @@ struct InsightsTabBarObserver: UIViewRepresentable {
 
     func updateUIView(_ view: ProbeView, context: Context) {
         context.coordinator.selection = $isMinimized
+        context.coordinator.isBottomBar = $isBottomBar
         context.coordinator.refresh(from: view)
     }
 
@@ -41,6 +43,7 @@ struct InsightsTabBarObserver: UIViewRepresentable {
 
     @MainActor final class Coordinator {
         var selection: Binding<Bool>
+        var isBottomBar: Binding<Bool>
         private weak var window: UIWindow?
         private weak var minimizedView: UIView?
         private weak var expandedView: UIView?
@@ -50,15 +53,20 @@ struct InsightsTabBarObserver: UIViewRepresentable {
         private var retryScheduled = false
         private var writeScheduled = false
         private var pendingValue = false
+        private var pendingPlacement = false
         private var isDismantled = false
 
-        init(selection: Binding<Bool>) { self.selection = selection }
+        init(selection: Binding<Bool>, isBottomBar: Binding<Bool>) {
+            self.selection = selection
+            self.isBottomBar = isBottomBar
+        }
 
         func refresh(from view: UIView) {
             guard !isDismantled else { return }
             guard let sourceWindow = view.window else {
                 window = nil
                 removeObservers()
+                pendingPlacement = false
                 publish(false)
                 return
             }
@@ -67,6 +75,11 @@ struct InsightsTabBarObserver: UIViewRepresentable {
                 retries = 3
             }
             let tabBar = sourceWindow.rootViewController.flatMap(Self.tabBarController)?.tabBar
+            // Duo can render a logical bottom tab bar vertically beside the content.
+            let frame = tabBar.map { $0.convert($0.bounds, to: sourceWindow) } ?? .zero
+            pendingPlacement = tabBar?.isHidden == false && frame.width > frame.height
+                && frame.midY > sourceWindow.bounds.midY
+            publish(pendingValue)
             // Match Kavsoft's two tab containers, including an initially zero-sized minimized view.
             let candidates = (tabBar?.subviews ?? [])
                 .filter { !String(describing: type(of: $0)).contains("UITabBarAuxiliary") }
@@ -127,8 +140,13 @@ struct InsightsTabBarObserver: UIViewRepresentable {
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 self.writeScheduled = false
-                guard !self.isDismantled, self.selection.wrappedValue != self.pendingValue else { return }
-                self.selection.wrappedValue = self.pendingValue
+                guard !self.isDismantled else { return }
+                if self.selection.wrappedValue != self.pendingValue {
+                    self.selection.wrappedValue = self.pendingValue
+                }
+                if self.isBottomBar.wrappedValue != self.pendingPlacement {
+                    self.isBottomBar.wrappedValue = self.pendingPlacement
+                }
             }
         }
 

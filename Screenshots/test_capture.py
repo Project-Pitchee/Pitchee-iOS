@@ -23,7 +23,8 @@ class CaptureTests(unittest.TestCase):
             directory = Path(temp)
             self.fixture(directory)
             export_images(directory, directory / "output", "6.9")
-            self.assertEqual(sorted(path.stem for path in (directory / "output").iterdir()), SCREENS)
+            self.assertEqual(sorted(path.stem for path in (directory / "output").iterdir()),
+                             ["01-home", "02-monitor", "03-insights", "04-articles"])
 
     def test_missing_screen_cannot_pass_with_incidental_screenshot(self):
         with tempfile.TemporaryDirectory() as temp:

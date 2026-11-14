@@ -93,7 +93,7 @@ struct DashboardCard: View {
                     titleColor: palette.primaryText,
                     detailColor: palette.secondaryText,
                     isCompact: size == .small,
-                    isEditing: isEditing
+                    showsDisclosure: component.supportsDetail && !isEditing
                 )
                 .padding(.leading, isEditing ? 28 : 0)
 
@@ -116,7 +116,7 @@ struct DashboardCard: View {
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .topLeading)
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             .background(palette.surface, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .liquidGlass(tint: .clear, cornerRadius: 20, interactive: true)
+            .liquidGlass(tint: .clear, cornerRadius: 20, interactive: component.supportsDetail)
             .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             .accessibilityElement(children: .combine)
         }
@@ -253,7 +253,7 @@ private struct DashboardCardHeader: View {
     let titleColor: Color
     let detailColor: Color
     let isCompact: Bool
-    let isEditing: Bool
+    let showsDisclosure: Bool
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
@@ -265,11 +265,12 @@ private struct DashboardCardHeader: View {
                 .lineLimit(isCompact ? 2 : 1)
                 .minimumScaleFactor(0.8)
             Spacer(minLength: 0)
-            Image(systemName: "chevron.right")
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(detailColor)
-                .opacity(isEditing ? 0 : 1)
-                .accessibilityHidden(true)
+            if showsDisclosure {
+                Image(systemName: "chevron.right")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(detailColor)
+                    .accessibilityHidden(true)
+            }
         }
         .font(.subheadline.weight(.medium))
     }

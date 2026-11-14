@@ -22,6 +22,7 @@ xcrun swiftc -parse-as-library -swift-version 5 -default-isolation MainActor \
     "$project_directory/PitcheeApp/Interop/Core/AnalysisResult.swift" \
     "$project_directory/PitcheeApp/Interop/Core/CoreError.swift" \
     -I "$core_scoring_module_directory" "$core_scoring_object" -lc++ \
+    "$project_directory/PitcheeApp/Analysis/VoicePreference.swift" \
     "$project_directory/PitcheeApp/Analysis/VoiceScoring.swift" \
     "$project_directory/PitcheeApp/Analysis/PitchTimeline.swift" \
     "$project_directory/PitcheeApp/Analysis/RecordingStatistics.swift" \

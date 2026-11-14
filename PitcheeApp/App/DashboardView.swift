@@ -212,13 +212,18 @@ struct DashboardView: View {
     }
 
     private func cell(_ component: DashboardComponent) -> some View {
-        Button { open(component) } label: {
-            DashboardCard(
-                component: component, size: configuration.size(for: component), snapshot: snapshot,
-                preference: preference, palette: palette, isEditing: isEditing
-            )
+        let card = DashboardCard(
+            component: component, size: configuration.size(for: component), snapshot: snapshot,
+            preference: preference, palette: palette, isEditing: isEditing
+        )
+        return Group {
+            if component.supportsDetail {
+                Button { open(component) } label: { card }
+                    .buttonStyle(.plain)
+            } else {
+                card
+            }
         }
-        .buttonStyle(.plain)
         .accessibilityIdentifier("dashboard.card.\(component.rawValue)")
         .overlay(alignment: .topLeading) {
             if isEditing {
@@ -275,7 +280,8 @@ struct DashboardView: View {
     }
 
     private func open(_ component: DashboardComponent) {
-        guard !isEditing, drag.item == nil, resizing == nil, selectedComponent == nil else { return }
+        guard component.supportsDetail, !isEditing, drag.item == nil,
+              resizing == nil, selectedComponent == nil else { return }
         var transaction = Transaction()
         transaction.disablesAnimations = true
         withTransaction(transaction) {

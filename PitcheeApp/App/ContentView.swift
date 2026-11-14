@@ -86,14 +86,12 @@ private struct MainTabView: View {
     @State private var insightsRange: InsightsRange = .sevenDays
     @State private var dashboardRanges = InsightsRange.allCases
     @State private var isDashboardVisible = false
+    @State private var hasBottomInsightsTabBar = false
     @State private var isInsightsBarMinimized = false
     @State private var monitorAccessoryState = MonitorAccessoryState()
     @Namespace private var monitorTransition
     @State private var practicePath: [PracticeRoute] = []
     @State private var keyboardIsVisible = false
-    #if DEBUG
-    @State private var showsScreenshotHistory = false
-    #endif
 
     init(themeColor: Color, dashboardTint: Color) {
         self.themeColor = themeColor
@@ -116,18 +114,16 @@ private struct MainTabView: View {
         }
         if let screen = ScreenshotMode.screen {
             _recordingModel = State(initialValue: .preview(state: .completed))
-            _selectedTab = State(initialValue: screen == .history ? .trends : .practice)
-            _showsScreenshotHistory = State(initialValue: screen == .history)
+            _selectedTab = State(initialValue: .practice)
             switch screen {
             case .monitor: _practicePath = State(initialValue: [.pitch])
             case .insights: _practicePath = State(initialValue: [.analysis])
             case .articles: _practicePath = State(initialValue: [.screenshotArticles])
-            case .home, .history: break
+            case .home: break
             }
         }
         if ScreenshotMode.dashboardScenario != nil {
             _selectedTab = State(initialValue: .trends)
-            _showsScreenshotHistory = State(initialValue: false)
             _practicePath = State(initialValue: [])
         }
         #endif
@@ -135,6 +131,7 @@ private struct MainTabView: View {
 
     var body: some View {
         tabNavigation
+            .modifier(DashboardWidgetSync(range: insightsRange))
             .tint(selectedTab == .trends ? dashboardTint : themeColor)
             .environment(\.monitorAccessoryState, monitorAccessoryState)
             .fullScreenCover(isPresented: $monitorAccessoryState.isExpanded) {
@@ -206,7 +203,8 @@ private struct MainTabView: View {
             tabs
                 .modifier(InsightsTabBarMinimization(
                     isEnabled: insightsPickerVisible,
-                    isMinimized: $isInsightsBarMinimized
+                    isMinimized: $isInsightsBarMinimized,
+                    isBottomBar: $hasBottomInsightsTabBar
                 ))
                 .modifier(TabBarAccessory(isVisible: scoringPageVisible || activeMonitorModel != nil) {
                     accessory
@@ -238,7 +236,7 @@ private struct MainTabView: View {
         TabView(selection: $selectedTab) {
             NavigationStack {
                 trendsRoot
-                    .safeAreaPadding(.bottom, usesLegacyTabBar || dashboardRanges.isEmpty ? 0 : 56)
+                    .safeAreaPadding(.bottom, usesLegacyTabBar || !usesBottomRangePicker || dashboardRanges.isEmpty ? 0 : 56)
                     .onAppear { isDashboardVisible = true }
                     .onDisappear { isDashboardVisible = false }
             }
@@ -301,19 +299,18 @@ private struct MainTabView: View {
 
     @ViewBuilder
     private var trendsRoot: some View {
-        TrendsView(range: $insightsRange, showsRangePicker: false) { ranges in
+        TrendsView(range: $insightsRange, showsRangePicker: !usesBottomRangePicker) { ranges in
             dashboardRanges = ranges
         }
-            #if DEBUG
-            .navigationDestination(isPresented: $showsScreenshotHistory) {
-                RecordingHistoryView(range: .all, now: ScreenshotMode.now)
-                .navigationTitle("insights.history.title")
-            }
-            #endif
+    }
+
+    private var usesBottomRangePicker: Bool {
+        // Duo can place tabs beside the content even at compact widths.
+        usesLegacyTabBar || hasBottomInsightsTabBar
     }
 
     private var insightsPickerVisible: Bool {
-        selectedTab == .trends && isDashboardVisible && !dashboardRanges.isEmpty
+        selectedTab == .trends && isDashboardVisible && !dashboardRanges.isEmpty && usesBottomRangePicker
     }
 
     private var activeMonitorModel: MonitorViewModel? {

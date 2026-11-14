@@ -8,11 +8,11 @@ import UIKit
 /// The store and defaults are isolated from a person's recordings and preferences.
 enum ScreenshotMode {
     enum Screen: String, CaseIterable {
-        case home, monitor, insights, articles, history
+        case home, monitor, insights, articles
     }
 
     enum DashboardScenario: String, CaseIterable {
-        case single, few, four, fortnight, twoMonths, long, gap, filteredSingle
+        case single, few, four, fortnight, twoMonths, long, gap, filteredSingle, emptyWeek
 
         var dayOffsets: [Int] {
             switch self {
@@ -24,11 +24,13 @@ enum ScreenshotMode {
             case .long: Array(stride(from: 179, through: 0, by: -2)) + [0]
             case .gap: [100, 50, 36, 5, 0]
             case .filteredSingle: [45, 25, 14, 0]
+            case .emptyWeek: [57, 38, 14, 7]
             }
         }
     }
 
     static let isEnabled = ProcessInfo.processInfo.arguments.contains("-UITestMode")
+    static let animationsEnabled = ProcessInfo.processInfo.arguments.contains("-UITestAnimations")
     static let now = Date(timeIntervalSince1970: 1_793_534_400) // 2026-11-01 12:00 UTC
     static let dashboardScenario: DashboardScenario? = {
         guard isEnabled else { return nil }
@@ -77,7 +79,7 @@ enum ScreenshotMode {
 
     static func makeContainer() throws -> ModelContainer {
         _ = screen // Validate launch arguments before displaying any UI.
-        UIView.setAnimationsEnabled(false)
+        UIView.setAnimationsEnabled(animationsEnabled)
         NSTimeZone.default = TimeZone(secondsFromGMT: 0)!
         URLProtocol.registerClass(ScreenshotNetworkBlocker.self)
         let container = try ModelContainer(
@@ -145,6 +147,7 @@ struct ScreenshotRootView: View {
             .environment(\.timeZone, TimeZone(secondsFromGMT: 0)!)
             .environment(\.openURL, OpenURLAction { _ in .discarded })
             .transaction { transaction in
+                guard !ScreenshotMode.animationsEnabled else { return }
                 transaction.animation = nil
                 transaction.disablesAnimations = true
             }

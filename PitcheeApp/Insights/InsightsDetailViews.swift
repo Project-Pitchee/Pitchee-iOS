@@ -44,7 +44,6 @@ private struct InsightsDetailContent<Content: View>: View {
 private struct InsightsCard<Content: View>: View {
     @AppStorage(AppStorageKey.themeSelection) private var savedTheme = AppThemeOption.twilt.rawValue
     @Environment(\.colorScheme) private var colorScheme
-    var interactive = false
     @ViewBuilder let content: () -> Content
 
     var body: some View {
@@ -55,7 +54,7 @@ private struct InsightsCard<Content: View>: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .liquidGlass(tint: palette.glass, cornerRadius: 20, interactive: interactive, highlight: true)
+        .liquidGlass(tint: palette.glass, cornerRadius: 20, highlight: true)
         .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 }
@@ -83,8 +82,8 @@ private struct InsightsStat: View {
 }
 
 private struct InsightsEmptyState: View {
-    var title: LocalizedStringKey = "insights.history.empty.title"
-    var description: LocalizedStringKey = "insights.history.empty.description"
+    let title: LocalizedStringKey
+    let description: LocalizedStringKey
     var symbol = "waveform"
 
     var body: some View {
@@ -94,144 +93,6 @@ private struct InsightsEmptyState: View {
             Text(description)
         }
         .padding(.vertical, 24)
-    }
-}
-
-struct RecordingHistoryView: View {
-    @Query(sort: \RecordingAssessment.recordedAt, order: .reverse)
-    private var assessments: [RecordingAssessment]
-    let range: InsightsRange
-    var now: Date = .now
-
-    var body: some View {
-        let calendar = Calendar.current
-        let visibleAssessments = InsightsData.assessments(assessments, in: range, relativeTo: now, calendar: calendar)
-        let groups = Dictionary(grouping: visibleAssessments) { calendar.startOfDay(for: $0.recordedAt) }
-        let groupedDays = groups.keys.sorted(by: >)
-        InsightsDetailContent {
-            InsightsCard {
-                HStack(alignment: .top, spacing: 12) {
-                    InsightsStat(title: "insights.summary.analysisCount.title", value: visibleAssessments.count.formatted(), tint: .blue)
-                    InsightsStat(title: "insights.history.recordingDays.label", value: groupedDays.count.formatted())
-                }
-            }
-
-            if visibleAssessments.isEmpty {
-                InsightsEmptyState()
-            } else {
-                ForEach(groupedDays, id: \.self) { day in
-                    Section {
-                        InsightsRecordingRows(assessments: groups[day] ?? [])
-                    } header: {
-                        Text(day, format: .dateTime.year().month().day().weekday())
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .accessibilityAddTraits(.isHeader)
-                    }
-                }
-            }
-        }
-    }
-}
-
-private struct InsightsRecordingRows: View {
-    let assessments: [RecordingAssessment]
-    private let metric: InsightsMetric = .composite
-    @AppStorage(AppStorageKey.voicePreference) private var savedVoicePreference = ""
-
-    private var voicePreference: VoicePreference {
-        VoicePreference(legacyStoredValue: savedVoicePreference) ?? .undecided
-    }
-
-    var body: some View {
-        ForEach(assessments) { assessment in
-            NavigationLink {
-                RecordingHistoryDetailView(assessment: assessment)
-            } label: {
-                InsightsCard(interactive: true) {
-                    HStack(spacing: 12) {
-                        Image(systemName: metric.symbol)
-                            .font(.title3)
-                            .foregroundStyle(metric.tint)
-                            .frame(width: 40, height: 40)
-                            .background(metric.tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
-                            .accessibilityHidden(true)
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text(assessment.recordedAt, format: .dateTime.hour().minute())
-                                .font(.headline)
-                            Text(Duration.seconds(max(0, assessment.inputSeconds)), format: .units(allowed: [.minutes, .seconds], width: .abbreviated))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer(minLength: 4)
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text(metric.formatted(metric.value(in: assessment, preference: voicePreference)))
-                                .font(.system(.title3, design: .rounded).weight(.bold))
-                                .foregroundStyle(metric.tint)
-                            Text(voicePreference.scoreTitleText)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-                        Image(systemName: "chevron.right")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.tertiary)
-                            .accessibilityHidden(true)
-                    }
-                    .padding(.vertical, 4)
-                    .contentShape(Rectangle())
-                }
-            }
-            .buttonStyle(.plain)
-            .accessibilityHint("insights.history.record.hint")
-        }
-    }
-}
-
-struct RecordingHistoryDetailView: View {
-    let assessment: RecordingAssessment
-    @AppStorage(AppStorageKey.voicePreference) private var savedVoicePreference = ""
-
-    private var voicePreference: VoicePreference {
-        assessment.recordedTarget
-            ?? VoicePreference(legacyStoredValue: savedVoicePreference)
-            ?? .undecided
-    }
-
-    var body: some View {
-        Group {
-            if let result = assessment.result {
-                RecordingResultView(
-                    result: result,
-                    volumeStatistics: nil,
-                    saveError: nil,
-                    quality: assessment.quality,
-                    recordedPreference: assessment.recordedTarget,
-                    showsBackground: false
-                )
-                    .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            RecordingExportButton(
-                                result: result,
-                                volumeStatistics: nil,
-                                preference: voicePreference
-                            )
-                                .labelStyle(.iconOnly)
-                        }
-                    }
-            } else {
-                ContentUnavailableView {
-                    Label("insights.history.unavailable.title", systemImage: "exclamationmark.triangle")
-                } description: {
-                    Text("insights.history.unavailable.description")
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-        .navigationTitle(Text(assessment.recordedAt, format: .dateTime.month().day().hour().minute()))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.visible, for: .navigationBar)
-        .toolbarBackground(.automatic, for: .navigationBar)
     }
 }
 
@@ -470,22 +331,11 @@ private struct InsightsDetailPreview: View {
     var body: some View {
         Group {
             switch destination {
-            case .history:
-                NavigationStack {
-                    RecordingHistoryView(range: range)
-                        .toolbar(.hidden, for: .navigationBar)
-                }
             case .activity: InsightsActivityView(range: range)
             case .metric(let metric): InsightsMetricDetailView(metric: metric, range: range)
             }
         }
         .defaultAppStorage(DebugPreviewDefaults.store)
-    }
-}
-
-#Preview("Insights - Recording History") {
-    if let container = DebugPreviewStore.makeContainer(withHistory: true) {
-        InsightsDetailPreview(destination: .history).modelContainer(container)
     }
 }
 

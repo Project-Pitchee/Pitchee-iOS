@@ -132,7 +132,7 @@ enum InsightsDataTests {
         container.mainContext.insert(first)
         try container.mainContext.save()
         let saved = try container.mainContext.fetch(FetchDescriptor<RecordingAssessment>())
-        check(saved.count == 1, "Saved analyses can be queried by the history page")
+        check(saved.count == 1, "Saved analyses remain queryable for Insights statistics")
         check(saved.first?.result?.composite.finalScore == 90, "Saved result payload reconstructs full analysis details")
         let originalPayload = first.resultPayload
         first.resultPayload = Data("invalid".utf8)

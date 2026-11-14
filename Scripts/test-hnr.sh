@@ -13,6 +13,7 @@ xcrun swiftc -parse-as-library -swift-version 6 -strict-concurrency=complete \
     -I "$project_directory/Dependencies/PitcheeCore/include" \
     "$core_scoring_object" -lc++ \
     "$project_directory/PitcheeApp/Interop/Core/AnalysisResult.swift" \
+    "$project_directory/PitcheeApp/Analysis/VoicePreference.swift" \
     "$project_directory/PitcheeApp/Analysis/VoiceScoring.swift" \
     "$project_directory/PitcheeApp/Practice/PracticeData.swift" \
     "$project_directory/PitcheeApp/Analysis/RecordingAssessment.swift" \

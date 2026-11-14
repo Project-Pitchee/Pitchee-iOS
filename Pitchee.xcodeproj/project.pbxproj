@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5549A1BB30A82FE00049316A /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55499E2D30A82C000049316A /* WidgetKit.framework */; };
+		5549A1BC30A82FE00049316A /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55499E2F30A82C000049316A /* SwiftUI.framework */; };
+		5549A1CB30A82FE20049316A /* WidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5549A1BA30A82FE00049316A /* WidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		55ED94313065A8780066A92F /* LaTeXSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 55ED94303065A8780066A92F /* LaTeXSwiftUI */; };
 		A10000000000000000000001 /* Artifacts/ONNXRuntime/onnxruntime.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* Artifacts/ONNXRuntime/onnxruntime.xcframework */; };
 		A10000000000000000000002 /* PitcheeCore/models in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* PitcheeCore/models */; };
@@ -14,9 +17,29 @@
 		A10000000000000000000004 /* CoreML.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* CoreML.framework */; };
 		A10000000000000000000005 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* Accelerate.framework */; };
 		A10000000000000000000006 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* CoreGraphics.framework */; };
+		F20000000000000000000001 /* PitcheeApp/App/DashboardCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000001 /* PitcheeApp/App/DashboardCard.swift */; };
+		F20000000000000000000002 /* PitcheeApp/App/DashboardTrendChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000002 /* PitcheeApp/App/DashboardTrendChart.swift */; };
+		F20000000000000000000003 /* PitcheeApp/App/DashboardConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000003 /* PitcheeApp/App/DashboardConfiguration.swift */; };
+		F20000000000000000000004 /* PitcheeApp/App/DashboardSizing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000004 /* PitcheeApp/App/DashboardSizing.swift */; };
+		F20000000000000000000005 /* PitcheeApp/App/AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000005 /* PitcheeApp/App/AppTheme.swift */; };
+		F20000000000000000000006 /* PitcheeApp/App/DuskGradient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000006 /* PitcheeApp/App/DuskGradient.swift */; };
+		F20000000000000000000007 /* PitcheeApp/App/LiquidGlass.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000007 /* PitcheeApp/App/LiquidGlass.swift */; };
+		F20000000000000000000008 /* PitcheeApp/App/AppStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000008 /* PitcheeApp/App/AppStorage.swift */; };
+		F20000000000000000000009 /* PitcheeApp/App/VoicePreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000009 /* PitcheeApp/App/VoicePreferences.swift */; };
+		F2000000000000000000000A /* PitcheeApp/Analysis/VoicePreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000A /* PitcheeApp/Analysis/VoicePreference.swift */; };
+		F2000000000000000000000B /* PitcheeApp/Insights/DashboardSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000B /* PitcheeApp/Insights/DashboardSnapshot.swift */; };
+		F2000000000000000000000C /* PitcheeApp/Insights/DashboardWidgetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000C /* PitcheeApp/Insights/DashboardWidgetStore.swift */; };
+		F2000000000000000000000D /* Resources/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000D /* Resources/Localizable.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		5549A1C930A82FE20049316A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B76D28C12FDC49E3009E536B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5549A1B930A82FE00049316A;
+			remoteInfo = WidgetsExtension;
+		};
 		DA0000000000000000000001 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B76D28C12FDC49E3009E536B /* Project object */;
@@ -33,7 +56,39 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		55499E4230A82C010049316A /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				5549A1CB30A82FE20049316A /* WidgetsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		55499CEE30A8260E0049316A /* CompilerIdC.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CompilerIdC.xcodeproj; sourceTree = "<group>"; };
+		55499D2630A8260E0049316A /* CompilerIdCXX.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CompilerIdCXX.xcodeproj; sourceTree = "<group>"; };
+		55499D5E30A8260E0049316A /* CompilerIdOBJC.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CompilerIdOBJC.xcodeproj; sourceTree = "<group>"; };
+		55499D9630A8260E0049316A /* CompilerIdOBJCXX.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CompilerIdOBJCXX.xcodeproj; sourceTree = "<group>"; };
+		55499DB130A8260E0049316A /* VoiceHealthBench.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = VoiceHealthBench.xcodeproj; sourceTree = "<group>"; };
+		55499E2D30A82C000049316A /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		55499E2F30A82C000049316A /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		5549A06530A82CCD0049316A /* CompilerIdC.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CompilerIdC.xcodeproj; sourceTree = "<group>"; };
+		5549A09D30A82CCD0049316A /* CompilerIdCXX.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CompilerIdCXX.xcodeproj; sourceTree = "<group>"; };
+		5549A0D530A82CCD0049316A /* CompilerIdOBJC.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CompilerIdOBJC.xcodeproj; sourceTree = "<group>"; };
+		5549A10D30A82CCD0049316A /* CompilerIdOBJCXX.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CompilerIdOBJCXX.xcodeproj; sourceTree = "<group>"; };
+		5549A12830A82CCD0049316A /* VoiceHealthBench.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = VoiceHealthBench.xcodeproj; sourceTree = "<group>"; };
+		5549A1BA30A82FE00049316A /* WidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		5549A40030A832970049316A /* CompilerIdC.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CompilerIdC.xcodeproj; sourceTree = "<group>"; };
+		5549A43830A832970049316A /* CompilerIdCXX.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CompilerIdCXX.xcodeproj; sourceTree = "<group>"; };
+		5549A47030A832970049316A /* CompilerIdOBJC.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CompilerIdOBJC.xcodeproj; sourceTree = "<group>"; };
+		5549A4A830A832970049316A /* CompilerIdOBJCXX.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CompilerIdOBJCXX.xcodeproj; sourceTree = "<group>"; };
+		5549A4C330A832970049316A /* VoiceHealthBench.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = VoiceHealthBench.xcodeproj; sourceTree = "<group>"; };
 		55942576309F1BB0004FAC3F /* CompilerIdC.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CompilerIdC.xcodeproj; sourceTree = "<group>"; };
 		559425AE309F1BB0004FAC3F /* CompilerIdCXX.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CompilerIdCXX.xcodeproj; sourceTree = "<group>"; };
 		559425E6309F1BB0004FAC3F /* CompilerIdOBJC.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CompilerIdOBJC.xcodeproj; sourceTree = "<group>"; };
@@ -74,9 +129,45 @@
 		D30000000000000000000001 /* PitcheeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PitcheeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D30000000000000000000002 /* PitcheeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PitcheeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E10000000000000000000001 /* Config/Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Version.xcconfig; sourceTree = SOURCE_ROOT; };
+		F10000000000000000000001 /* PitcheeApp/App/DashboardCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitcheeApp/App/DashboardCard.swift; sourceTree = SOURCE_ROOT; };
+		F10000000000000000000002 /* PitcheeApp/App/DashboardTrendChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitcheeApp/App/DashboardTrendChart.swift; sourceTree = SOURCE_ROOT; };
+		F10000000000000000000003 /* PitcheeApp/App/DashboardConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitcheeApp/App/DashboardConfiguration.swift; sourceTree = SOURCE_ROOT; };
+		F10000000000000000000004 /* PitcheeApp/App/DashboardSizing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitcheeApp/App/DashboardSizing.swift; sourceTree = SOURCE_ROOT; };
+		F10000000000000000000005 /* PitcheeApp/App/AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitcheeApp/App/AppTheme.swift; sourceTree = SOURCE_ROOT; };
+		F10000000000000000000006 /* PitcheeApp/App/DuskGradient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitcheeApp/App/DuskGradient.swift; sourceTree = SOURCE_ROOT; };
+		F10000000000000000000007 /* PitcheeApp/App/LiquidGlass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitcheeApp/App/LiquidGlass.swift; sourceTree = SOURCE_ROOT; };
+		F10000000000000000000008 /* PitcheeApp/App/AppStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitcheeApp/App/AppStorage.swift; sourceTree = SOURCE_ROOT; };
+		F10000000000000000000009 /* PitcheeApp/App/VoicePreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitcheeApp/App/VoicePreferences.swift; sourceTree = SOURCE_ROOT; };
+		F1000000000000000000000A /* PitcheeApp/Analysis/VoicePreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitcheeApp/Analysis/VoicePreference.swift; sourceTree = SOURCE_ROOT; };
+		F1000000000000000000000B /* PitcheeApp/Insights/DashboardSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitcheeApp/Insights/DashboardSnapshot.swift; sourceTree = SOURCE_ROOT; };
+		F1000000000000000000000C /* PitcheeApp/Insights/DashboardWidgetStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitcheeApp/Insights/DashboardWidgetStore.swift; sourceTree = SOURCE_ROOT; };
+		F1000000000000000000000D /* Resources/Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Resources/Localizable.xcstrings; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5549A1CC30A82FE20049316A /* Exceptions for "Widgets" folder in "WidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 5549A1B930A82FE00049316A /* WidgetsExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		55499E3130A82C000049316A /* Widgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Widgets;
+			sourceTree = "<group>";
+		};
+		5549A1BD30A82FE10049316A /* Widgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5549A1CC30A82FE20049316A /* Exceptions for "Widgets" folder in "WidgetsExtension" target */,
+			);
+			path = Widgets;
+			sourceTree = "<group>";
+		};
 		55B9F06F30559D0E005ECDBE /* Resources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Resources;
@@ -130,6 +221,15 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		5549A1B730A82FE00049316A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5549A1BC30A82FE00049316A /* SwiftUI.framework in Frameworks */,
+				5549A1BB30A82FE00049316A /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B76D28C62FDC49E3009E536B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -160,6 +260,111 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		55499DB630A8260E0049316A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		55499DB830A8260E0049316A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		55499DBA30A8260E0049316A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		55499DBC30A8260E0049316A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		55499DBE30A8260E0049316A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5549A12D30A82CCD0049316A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5549A12F30A82CCD0049316A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5549A13130A82CCD0049316A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5549A13330A82CCD0049316A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5549A13530A82CCD0049316A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5549A4C830A832970049316A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5549A4CA30A832970049316A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5549A4CC30A832970049316A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5549A4CE30A832970049316A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5549A4D030A832970049316A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		5594263E309F1BB0004FAC3F /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -223,6 +428,21 @@
 				55F18255309F4C3F00B7963A /* CompilerIdCXX.xcodeproj */,
 				55F1821D309F4C3F00B7963A /* CompilerIdC.xcodeproj */,
 				55F182E0309F4C3F00B7963A /* VoiceHealthBench.xcodeproj */,
+				55F186D9309F572400B7963A /* VoiceHealthBench.xcodeproj */,
+				55F186BE309F572400B7963A /* CompilerIdOBJCXX.xcodeproj */,
+				55F1864E309F572400B7963A /* CompilerIdCXX.xcodeproj */,
+				55F18616309F572400B7963A /* CompilerIdC.xcodeproj */,
+				55F18686309F572400B7963A /* CompilerIdOBJC.xcodeproj */,
+				55499CEE30A8260E0049316A /* CompilerIdC.xcodeproj */,
+				55499DB130A8260E0049316A /* VoiceHealthBench.xcodeproj */,
+				55499D2630A8260E0049316A /* CompilerIdCXX.xcodeproj */,
+				55499D5E30A8260E0049316A /* CompilerIdOBJC.xcodeproj */,
+				55499D9630A8260E0049316A /* CompilerIdOBJCXX.xcodeproj */,
+				5549A09D30A82CCD0049316A /* CompilerIdCXX.xcodeproj */,
+				5549A10D30A82CCD0049316A /* CompilerIdOBJCXX.xcodeproj */,
+				5549A0D530A82CCD0049316A /* CompilerIdOBJC.xcodeproj */,
+				5549A12830A82CCD0049316A /* VoiceHealthBench.xcodeproj */,
+				5549A06530A82CCD0049316A /* CompilerIdC.xcodeproj */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -420,6 +640,8 @@
 				A20000000000000000000004 /* CoreML.framework */,
 				A20000000000000000000006 /* CoreGraphics.framework */,
 				A20000000000000000000003 /* Foundation.framework */,
+				55499E2D30A82C000049316A /* WidgetKit.framework */,
+				55499E2F30A82C000049316A /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -437,6 +659,9 @@
 				C10000000000000000000003 /* Research */,
 				C10000000000000000000004 /* Tests */,
 				A30000000000000000000001 /* Dependencies */,
+				55499E3130A82C000049316A /* Widgets */,
+				5549A1BD30A82FE10049316A /* Widgets */,
+				F30000000000000000000001 /* Shared dashboard */,
 				A30000000000000000000002 /* Frameworks */,
 				B76D28CA2FDC49E3009E536B /* Products */,
 				559426A6309F2947004FAC3F /* Recovered References */,
@@ -449,13 +674,56 @@
 				B76D28C92FDC49E3009E536B /* Pitchee.app */,
 				D30000000000000000000002 /* PitcheeUITests.xctest */,
 				D30000000000000000000001 /* PitcheeTests.xctest */,
+				5549A1BA30A82FE00049316A /* WidgetsExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F30000000000000000000001 /* Shared dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				F10000000000000000000001 /* PitcheeApp/App/DashboardCard.swift */,
+				F10000000000000000000002 /* PitcheeApp/App/DashboardTrendChart.swift */,
+				F10000000000000000000003 /* PitcheeApp/App/DashboardConfiguration.swift */,
+				F10000000000000000000004 /* PitcheeApp/App/DashboardSizing.swift */,
+				F10000000000000000000005 /* PitcheeApp/App/AppTheme.swift */,
+				F10000000000000000000006 /* PitcheeApp/App/DuskGradient.swift */,
+				F10000000000000000000007 /* PitcheeApp/App/LiquidGlass.swift */,
+				F10000000000000000000008 /* PitcheeApp/App/AppStorage.swift */,
+				F10000000000000000000009 /* PitcheeApp/App/VoicePreferences.swift */,
+				F1000000000000000000000A /* PitcheeApp/Analysis/VoicePreference.swift */,
+				F1000000000000000000000B /* PitcheeApp/Insights/DashboardSnapshot.swift */,
+				F1000000000000000000000C /* PitcheeApp/Insights/DashboardWidgetStore.swift */,
+				F1000000000000000000000D /* Resources/Localizable.xcstrings */,
+			);
+			name = "Shared dashboard";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		5549A1B930A82FE00049316A /* WidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5549A1CD30A82FE20049316A /* Build configuration list for PBXNativeTarget "WidgetsExtension" */;
+			buildPhases = (
+				5549A1B630A82FE00049316A /* Sources */,
+				5549A1B730A82FE00049316A /* Frameworks */,
+				5549A1B830A82FE00049316A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				5549A1BD30A82FE10049316A /* Widgets */,
+			);
+			name = WidgetsExtension;
+			packageProductDependencies = (
+			);
+			productName = WidgetsExtension;
+			productReference = 5549A1BA30A82FE00049316A /* WidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		B76D28C82FDC49E3009E536B /* Pitchee */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B76D28D42FDC49E5009E536B /* Build configuration list for PBXNativeTarget "Pitchee" */;
@@ -463,10 +731,12 @@
 				B76D28C52FDC49E3009E536B /* Sources */,
 				B76D28C62FDC49E3009E536B /* Frameworks */,
 				B76D28C72FDC49E3009E536B /* Resources */,
+				55499E4230A82C010049316A /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				5549A1CA30A82FE20049316A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				55B9F06F30559D0E005ECDBE /* Resources */,
@@ -531,9 +801,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2650;
+				LastSwiftUpdateCheck = 2730;
 				LastUpgradeCheck = 2710;
 				TargetAttributes = {
+					5549A1B930A82FE00049316A = {
+						CreatedOnToolsVersion = 27.3;
+					};
 					B76D28C82FDC49E3009E536B = {
 						CreatedOnToolsVersion = 26.5;
 					};
@@ -592,12 +865,24 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 55F17BCB309F2FD700B7963A /* Products */;
-					ProjectRef = 55F17AFB309F2FD700B7963A /* CompilerIdC.xcodeproj */;
+					ProductGroup = 55499DB630A8260E0049316A /* Products */;
+					ProjectRef = 55499CEE30A8260E0049316A /* CompilerIdC.xcodeproj */;
 				},
 				{
 					ProductGroup = 55942646309F1BB0004FAC3F /* Products */;
 					ProjectRef = 55942576309F1BB0004FAC3F /* CompilerIdC.xcodeproj */;
+				},
+				{
+					ProductGroup = 5549A4C830A832970049316A /* Products */;
+					ProjectRef = 5549A40030A832970049316A /* CompilerIdC.xcodeproj */;
+				},
+				{
+					ProductGroup = 55F17BCB309F2FD700B7963A /* Products */;
+					ProjectRef = 55F17AFB309F2FD700B7963A /* CompilerIdC.xcodeproj */;
+				},
+				{
+					ProductGroup = 5549A12D30A82CCD0049316A /* Products */;
+					ProjectRef = 5549A06530A82CCD0049316A /* CompilerIdC.xcodeproj */;
 				},
 				{
 					ProductGroup = 55F186E2309F572400B7963A /* Products */;
@@ -624,8 +909,8 @@
 					ProjectRef = 559428F8309F2947004FAC3F /* CompilerIdCXX.xcodeproj */;
 				},
 				{
-					ProductGroup = 55F17F55309F4C1B00B7963A /* Products */;
-					ProjectRef = 55F17EC5309F4C1B00B7963A /* CompilerIdCXX.xcodeproj */;
+					ProductGroup = 5549A12F30A82CCD0049316A /* Products */;
+					ProjectRef = 5549A09D30A82CCD0049316A /* CompilerIdCXX.xcodeproj */;
 				},
 				{
 					ProductGroup = 55F186DE309F572400B7963A /* Products */;
@@ -636,20 +921,44 @@
 					ProjectRef = 55F17B33309F2FD700B7963A /* CompilerIdCXX.xcodeproj */;
 				},
 				{
+					ProductGroup = 55499DB830A8260E0049316A /* Products */;
+					ProjectRef = 55499D2630A8260E0049316A /* CompilerIdCXX.xcodeproj */;
+				},
+				{
+					ProductGroup = 55F17F55309F4C1B00B7963A /* Products */;
+					ProjectRef = 55F17EC5309F4C1B00B7963A /* CompilerIdCXX.xcodeproj */;
+				},
+				{
 					ProductGroup = 55F182ED309F4C3F00B7963A /* Products */;
 					ProjectRef = 55F18255309F4C3F00B7963A /* CompilerIdCXX.xcodeproj */;
 				},
 				{
-					ProductGroup = 55F17BC3309F2FD700B7963A /* Products */;
-					ProjectRef = 55F17B6B309F2FD700B7963A /* CompilerIdOBJC.xcodeproj */;
+					ProductGroup = 5549A4CC30A832970049316A /* Products */;
+					ProjectRef = 5549A43830A832970049316A /* CompilerIdCXX.xcodeproj */;
 				},
 				{
 					ProductGroup = 55F182E9309F4C3F00B7963A /* Products */;
 					ProjectRef = 55F1828D309F4C3F00B7963A /* CompilerIdOBJC.xcodeproj */;
 				},
 				{
-					ProductGroup = 55F186E0309F572400B7963A /* Products */;
-					ProjectRef = 55F18686309F572400B7963A /* CompilerIdOBJC.xcodeproj */;
+					ProductGroup = 5549A13130A82CCD0049316A /* Products */;
+					ProjectRef = 5549A0D530A82CCD0049316A /* CompilerIdOBJC.xcodeproj */;
+				},
+				{
+					ProductGroup = 55F17F57309F4C1B00B7963A /* Products */;
+					ProjectRef = 55F17EFD309F4C1B00B7963A /* CompilerIdOBJC.xcodeproj */;
+				},
+				{
+					ProductGroup = 55F17BC3309F2FD700B7963A /* Products */;
+					ProjectRef = 55F17B6B309F2FD700B7963A /* CompilerIdOBJC.xcodeproj */;
+				},
+				{
+					ProductGroup = 55499DBC30A8260E0049316A /* Products */;
+					ProjectRef = 55499D5E30A8260E0049316A /* CompilerIdOBJC.xcodeproj */;
+				},
+				{
+					ProductGroup = 5549A4CA30A832970049316A /* Products */;
+					ProjectRef = 5549A47030A832970049316A /* CompilerIdOBJC.xcodeproj */;
 				},
 				{
 					ProductGroup = 55942644309F1BB0004FAC3F /* Products */;
@@ -660,12 +969,24 @@
 					ProjectRef = 55942930309F2947004FAC3F /* CompilerIdOBJC.xcodeproj */;
 				},
 				{
-					ProductGroup = 55F17F57309F4C1B00B7963A /* Products */;
-					ProjectRef = 55F17EFD309F4C1B00B7963A /* CompilerIdOBJC.xcodeproj */;
+					ProductGroup = 55F186E0309F572400B7963A /* Products */;
+					ProjectRef = 55F18686309F572400B7963A /* CompilerIdOBJC.xcodeproj */;
 				},
 				{
 					ProductGroup = 55942642309F1BB0004FAC3F /* Products */;
 					ProjectRef = 5594261E309F1BB0004FAC3F /* CompilerIdOBJCXX.xcodeproj */;
+				},
+				{
+					ProductGroup = 5549A13330A82CCD0049316A /* Products */;
+					ProjectRef = 5549A10D30A82CCD0049316A /* CompilerIdOBJCXX.xcodeproj */;
+				},
+				{
+					ProductGroup = 5549A4CE30A832970049316A /* Products */;
+					ProjectRef = 5549A4A830A832970049316A /* CompilerIdOBJCXX.xcodeproj */;
+				},
+				{
+					ProductGroup = 55F17BC7309F2FD700B7963A /* Products */;
+					ProjectRef = 55F17BA3309F2FD700B7963A /* CompilerIdOBJCXX.xcodeproj */;
 				},
 				{
 					ProductGroup = 55F182E5309F4C3F00B7963A /* Products */;
@@ -684,12 +1005,32 @@
 					ProjectRef = 55942968309F2947004FAC3F /* CompilerIdOBJCXX.xcodeproj */;
 				},
 				{
-					ProductGroup = 55F17BC7309F2FD700B7963A /* Products */;
-					ProjectRef = 55F17BA3309F2FD700B7963A /* CompilerIdOBJCXX.xcodeproj */;
+					ProductGroup = 55499DBE30A8260E0049316A /* Products */;
+					ProjectRef = 55499D9630A8260E0049316A /* CompilerIdOBJCXX.xcodeproj */;
 				},
 				{
 					ProductGroup = 55F186E4309F572400B7963A /* Products */;
 					ProjectRef = 55F186D9309F572400B7963A /* VoiceHealthBench.xcodeproj */;
+				},
+				{
+					ProductGroup = 5549A13530A82CCD0049316A /* Products */;
+					ProjectRef = 5549A12830A82CCD0049316A /* VoiceHealthBench.xcodeproj */;
+				},
+				{
+					ProductGroup = 55499DBA30A8260E0049316A /* Products */;
+					ProjectRef = 55499DB130A8260E0049316A /* VoiceHealthBench.xcodeproj */;
+				},
+				{
+					ProductGroup = 5549A4D030A832970049316A /* Products */;
+					ProjectRef = 5549A4C330A832970049316A /* VoiceHealthBench.xcodeproj */;
+				},
+				{
+					ProductGroup = 55F17F59309F4C1B00B7963A /* Products */;
+					ProjectRef = 55F17F50309F4C1B00B7963A /* VoiceHealthBench.xcodeproj */;
+				},
+				{
+					ProductGroup = 55F182EB309F4C3F00B7963A /* Products */;
+					ProjectRef = 55F182E0309F4C3F00B7963A /* VoiceHealthBench.xcodeproj */;
 				},
 				{
 					ProductGroup = 5594298E309F2947004FAC3F /* Products */;
@@ -703,25 +1044,26 @@
 					ProductGroup = 55F17BC5309F2FD700B7963A /* Products */;
 					ProjectRef = 55F17BBE309F2FD700B7963A /* VoiceHealthBench.xcodeproj */;
 				},
-				{
-					ProductGroup = 55F17F59309F4C1B00B7963A /* Products */;
-					ProjectRef = 55F17F50309F4C1B00B7963A /* VoiceHealthBench.xcodeproj */;
-				},
-				{
-					ProductGroup = 55F182EB309F4C3F00B7963A /* Products */;
-					ProjectRef = 55F182E0309F4C3F00B7963A /* VoiceHealthBench.xcodeproj */;
-				},
 			);
 			projectRoot = "";
 			targets = (
 				D10000000000000000000002 /* PitcheeUITests */,
 				D10000000000000000000001 /* PitcheeTests */,
 				B76D28C82FDC49E3009E536B /* Pitchee */,
+				5549A1B930A82FE00049316A /* WidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		5549A1B830A82FE00049316A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F2000000000000000000000D /* Resources/Localizable.xcstrings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B76D28C72FDC49E3009E536B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -747,6 +1089,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		5549A1B630A82FE00049316A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F20000000000000000000001 /* PitcheeApp/App/DashboardCard.swift in Sources */,
+				F20000000000000000000002 /* PitcheeApp/App/DashboardTrendChart.swift in Sources */,
+				F20000000000000000000003 /* PitcheeApp/App/DashboardConfiguration.swift in Sources */,
+				F20000000000000000000004 /* PitcheeApp/App/DashboardSizing.swift in Sources */,
+				F20000000000000000000005 /* PitcheeApp/App/AppTheme.swift in Sources */,
+				F20000000000000000000006 /* PitcheeApp/App/DuskGradient.swift in Sources */,
+				F20000000000000000000007 /* PitcheeApp/App/LiquidGlass.swift in Sources */,
+				F20000000000000000000008 /* PitcheeApp/App/AppStorage.swift in Sources */,
+				F20000000000000000000009 /* PitcheeApp/App/VoicePreferences.swift in Sources */,
+				F2000000000000000000000A /* PitcheeApp/Analysis/VoicePreference.swift in Sources */,
+				F2000000000000000000000B /* PitcheeApp/Insights/DashboardSnapshot.swift in Sources */,
+				F2000000000000000000000C /* PitcheeApp/Insights/DashboardWidgetStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B76D28C52FDC49E3009E536B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -771,6 +1132,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		5549A1CA30A82FE20049316A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5549A1B930A82FE00049316A /* WidgetsExtension */;
+			targetProxy = 5549A1C930A82FE20049316A /* PBXContainerItemProxy */;
+		};
 		DB0000000000000000000001 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = B76D28C82FDC49E3009E536B /* Pitchee */;
@@ -784,6 +1150,68 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		5549A1CE30A82FE20049316A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = Config/Pitchee.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = UGT9K2LTQ3;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Widgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Pitchee;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.rolvy.Pitchee.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5549A1CF30A82FE20049316A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = Config/Pitchee.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = UGT9K2LTQ3;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Widgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Pitchee;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.rolvy.Pitchee.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		B76D28D22FDC49E5009E536B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E10000000000000000000001 /* Config/Version.xcconfig */;
@@ -920,8 +1348,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = Pitchee;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CODE_SIGN_ENTITLEMENTS = Config/Pitchee.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 963SN9ZCQ5;
+				DEVELOPMENT_TEAM = UGT9K2LTQ3;
 				ENABLE_PREVIEWS = YES;
 				EXCLUDED_SOURCE_FILE_NAMES = ncnn_pitchee_layers.cpp;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -974,8 +1403,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = Pitchee;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CODE_SIGN_ENTITLEMENTS = Config/Pitchee.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 963SN9ZCQ5;
+				DEVELOPMENT_TEAM = UGT9K2LTQ3;
 				ENABLE_PREVIEWS = YES;
 				EXCLUDED_SOURCE_FILE_NAMES = ncnn_pitchee_layers.cpp;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -1027,6 +1457,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = UGT9K2LTQ3;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1051,6 +1482,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = UGT9K2LTQ3;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rolvy.PitcheeUITests;
@@ -1068,6 +1500,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = UGT9K2LTQ3;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1092,6 +1525,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = UGT9K2LTQ3;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rolvy.PitcheeUITests;
@@ -1106,6 +1540,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		5549A1CD30A82FE20049316A /* Build configuration list for PBXNativeTarget "WidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5549A1CE30A82FE20049316A /* Debug */,
+				5549A1CF30A82FE20049316A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		B76D28C42FDC49E3009E536B /* Build configuration list for PBXProject "Pitchee" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
