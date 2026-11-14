@@ -166,10 +166,10 @@ struct AboutPitcheeView: View {
         .padding(.bottom, 42)
     }
 
-    private func communityLink(_ title: LocalizedStringKey, destination: URL, identifier: String) -> some View {
+    private func communityLink(_ title: String, destination: URL, identifier: String) -> some View {
         Link(destination: destination) {
             HStack(spacing: 12) {
-                Text(title, tableName: "AboutPitchee")
+                Text(LocalizedStringKey(title), tableName: "AboutPitchee")
                     .font(.body.weight(.medium))
                     .foregroundStyle(palette.primaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -200,8 +200,9 @@ struct AboutPitcheeView: View {
 private struct AboutStoryRow: View {
     let number: String
     let symbol: String
-    let title: LocalizedStringKey
-    let detail: LocalizedStringKey
+    // String keys avoid automatic extraction into the default Localizable catalog.
+    let title: String
+    let detail: String
     let palette: AppThemePalette
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -221,11 +222,11 @@ private struct AboutStoryRow: View {
             .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 10) {
-                Text(title, tableName: "AboutPitchee")
+                Text(LocalizedStringKey(title), tableName: "AboutPitchee")
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(palette.primaryText)
                     .accessibilityAddTraits(.isHeader)
-                Text(detail, tableName: "AboutPitchee")
+                Text(LocalizedStringKey(detail), tableName: "AboutPitchee")
                     .font(.subheadline)
                     .foregroundStyle(palette.secondaryText)
                     .lineSpacing(4)
